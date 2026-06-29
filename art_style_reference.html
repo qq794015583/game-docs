@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美术风格参考 — AI提示词与对比</title>
+<style>
+:root{--bg:#0d1117;--bg-card:#161b22;--bg-hover:#1c2128;--border:#30363d;--text:#e6edf3;--text-dim:#8b949e;--accent:#58a6ff;--accent-dim:#1f6feb;--green:#3fb950;--yellow:#d29922;--red:#f85149;--purple:#bc8cff;--orange:#db6d28}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif;line-height:1.6;padding:20px}
+h1{font-size:28px;margin-bottom:8px}h2{font-size:22px;margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px}h3{font-size:17px;margin:16px 0 8px;color:var(--accent)}h4{font-size:15px;margin:12px 0 6px}
+.subtitle{color:var(--text-dim);margin-bottom:24px;font-size:14px}
+.tab-bar{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--border);flex-wrap:wrap}.tab{padding:10px 20px;cursor:pointer;border:none;background:none;color:var(--text-dim);font-size:14px;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}.tab:hover{color:var(--text)}.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{display:none}.tab-content.active{display:block}
+.note{background:rgba(56,139,253,.1);border:1px solid var(--accent-dim);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:13px}.note strong{color:var(--accent)}
+.prompt-box{background:var(--bg-card);border:1px solid var(--border);border-left:4px solid var(--green);border-radius:8px;padding:16px;margin:12px 0}
+.prompt-box h4{color:var(--green);margin-bottom:8px}
+.prompt-box .prompt-meta{font-size:12px;color:var(--text-dim);margin-bottom:8px}
+.prompt-box .prompt-content{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:13px;font-family:'Consolas','Courier New',monospace;white-space:pre-wrap;line-height:1.8;color:var(--text)}
+.prompt-box .copy-btn{margin-top:8px;padding:4px 12px;background:var(--accent-dim);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px}
+.prompt-box .copy-btn:hover{background:var(--accent)}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:16px 0}
+.summary-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px}
+.summary-card h4{color:var(--accent);margin-bottom:8px}
+.dim-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}.dim-table th{background:var(--bg-card);color:var(--accent);padding:8px;border-bottom:2px solid var(--border)}.dim-table td{padding:8px;border-bottom:1px solid var(--border);text-align:center}.dim-table td:first-child{text-align:left;color:var(--purple);font-weight:600}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}.tag-green{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3)}.tag-yellow{background:rgba(210,153,34,.15);color:var(--yellow);border:1px solid rgba(210,153,34,.3)}.tag-purple{background:rgba(188,140,255,.15);color:var(--purple);border:1px solid rgba(188,140,255,.3)}.tag-orange{background:rgba(219,109,40,.15);color:var(--orange);border:1px solid rgba(219,109,40,.3)}
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin:16px 0}
+.ref-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px}
+.ref-card h4{color:var(--accent);margin-bottom:8px}
+.ref-card .ref-path{font-size:11px;color:var(--text-dim);font-family:monospace;margin-bottom:8px}
+.ref-card .ref-desc{font-size:13px;color:var(--text-dim)}
+::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+</style>
+</head>
+<body>
+
+<h1>🎨 美术风格参考 — AI提示词与对比</h1>
+<p class="subtitle">10张风格参考图 · GPT×5 + 香蕉×5 · 基于原游戏美术风格分析 · 含换蒙皮技术要点</p>
+
+<div class="note">
+  <strong>10张图清单：</strong><br>
+  <strong>GPT最新版（5张）：</strong>悟空(西游) + 赵云(三国) + 哪吒(封神) + UI主界面 + 场景<br>
+  <strong>香蕉最新版（5张）：</strong>悟空(西游) + 赵云(三国) + 哪吒(封神) + UI主界面 + 场景<br><br>
+  <strong>原游戏美术风格：</strong>高精度半写实二次元插画（Arknights/Honkai级别），柔渐变阴影，强rim light，互补色方案，bokeh虚化背景
+</div>
+
+<div class="tab-bar">
+  <button class="tab active" onclick="switchTab('reference')">📷 原游戏参考图分析</button>
+  <button class="tab" onclick="switchTab('gpt')">🤖 GPT提示词（5张）</button>
+  <button class="tab" onclick="switchTab('banana')">🍌 香蕉提示词（5张）</button>
+  <button class="tab" onclick="switchTab('compare')">📊 三方案角色对比</button>
+  <button class="tab" onclick="switchTab('tech')">🔧 换蒙皮技术要点</button>
+</div>
+
+<!-- ========== Tab 1: 原游戏参考图分析 ========== -->
+<div id="tab-reference" class="tab-content active">
+<h2>原游戏美术参考图分析</h2>
+<p style="font-size:13px;color:var(--text-dim)">以下4张参考图定义了游戏的核心美术风格，AI生图提示词基于这些风格特征编写。</p>
+
+<div class="ref-grid">
+  <div class="ref-card" style="border-left:4px solid var(--purple)">
+    <h4>参考图1：卡牌立绘</h4>
+    <div class="ref-path">ImgCard0292_FA.png (34MB)</div>
+    <div class="ref-desc">
+      <strong>风格：</strong>高精度半写实二次元插画<br>
+      <strong>技法：</strong>柔渐变阴影（非硬塞璐璐），喷枪过渡<br>
+      <strong>色彩：</strong>紫/蓝背景 vs 粉/橙光源（互补色）<br>
+      <strong>光影：</strong>强背光rim light，体积雾，specular高光<br>
+      <strong>构图：</strong>中心角色+动态pose，背景bokeh虚化<br>
+      <strong>特征：</strong>军事+科幻混搭，机械外骨骼，无人机
+    </div>
+  </div>
+
+  <div class="ref-card" style="border-left:4px solid var(--accent)">
+    <h4>参考图2：角色立绘（歌姬）</h4>
+    <div class="ref-path">Img_headV_01.png (847KB)</div>
+    <div class="ref-desc">
+      <strong>风格：</strong>Cel-shaded anime，魔法少女/idol美学<br>
+      <strong>特征：</strong>大眼+宝石高光，华丽装饰，金色配件<br>
+      <strong>乐器武器：</strong>奇幻电吉他——半透明蓝色魔法能量+金边框架<br>
+      <strong>色彩：</strong>白色+粉色+金色+蓝色<br>
+      <strong>pose：</strong>3/4侧身，手持吉他准备演奏
+    </div>
+  </div>
+
+  <div class="ref-card" style="border-left:4px solid var(--orange)">
+    <h4>参考图3：Loading图</h4>
+    <div class="ref-path">ImgLoading001.png (6.8MB)</div>
+    <div class="ref-desc">
+      <strong>风格：</strong>照片级电影3D渲染<br>
+      <strong>色彩：</strong>Teal & Orange互补色（冷青蓝 vs 暖橙红）<br>
+      <strong>氛围：</strong>史诗科幻战场，体积光，爆炸光效<br>
+      <strong>构图：</strong>对角线动态构图，大小对比
+    </div>
+  </div>
+
+  <div class="ref-card" style="border-left:4px solid var(--green)">
+    <h4>参考图4：战斗场景</h4>
+    <div class="ref-path">ImgPvp001.png (战斗地图预览)</div>
+    <div class="ref-desc">
+      <strong>风格：</strong>科幻技术奇幻，3D场景<br>
+      <strong>色彩：</strong>单色蓝色调——深海军蓝到电光青色<br>
+      <strong>元素：</strong>悬浮几何结构，发光能量纹，体积光束<br>
+      <strong>氛围：</strong>空灵、神秘、庄严，零重力感
+    </div>
+  </div>
+</div>
+
+<h3>AI生图核心风格要点</h3>
+<table class="dim-table">
+<thead><tr><th>风格维度</th><th>要求</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>渲染风格</td><td>半写实二次元</td><td>介于anime和3D之间，painterly shading</td></tr>
+<tr><td>阴影技法</td><td>柔渐变</td><td>非硬塞璐璐线，airbrush过渡</td></tr>
+<tr><td>光影</td><td>强rim light</td><td>背光边缘高光，体积雾</td></tr>
+<tr><td>色彩方案</td><td>互补色</td><td>冷色背景+暖色角色（或反之）</td></tr>
+<tr><td>背景</td><td>bokeh虚化</td><td>景深效果，角色为焦点</td></tr>
+<tr><td>粒子</td><td>浮动粒子特效</td><td>金色火花/蓝色能量/火焰余烬</td></tr>
+<tr><td>构图</td><td>动态3/4 pose</td><td>动作感，非站桩</td></tr>
+<tr><td>质感</td><td>金属/织物/皮肤</td><td>高精度材质贴图感</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ========== Tab 2: GPT提示词 ========== -->
+<div id="tab-gpt" class="tab-content">
+<h2>🤖 GPT最新版提示词（5张）</h2>
+
+<div class="prompt-box">
+  <h4>GPT-1：悟空（西游·侠客·人类化）</h4>
+  <div class="prompt-meta">用途：角色风格参考 | 画幅：竖版全身 | 关键：人类化不做猴脸</div>
+  <div class="prompt-content">Create a high-fidelity semi-realistic anime character illustration in the style of premium gacha games like Arknights and Honkai Impact 3rd.
+
+Character: Sun Wukong (Monkey King), humanized warrior form — NOT a literal monkey face, but a handsome young male warrior with monkey-inspired aesthetic features.
+
+Design details:
+- Human face with golden irises, subtle golden facial markings/lines on cheeks
+- Forehead band (golden circlet) with glowing orange gem
+- Pointed monkey-ear decorations on headband (not actual animal ears)
+- Spiky golden-brown hair, anime-style
+- Muscular lean build, agile stance
+- Wearing golden armor plates over a dark navy-blue bodysuit
+- Red flowing scarf/cape behind
+- Holding a golden staff (Ruyi Jingu Bang) diagonally across body
+- Monkey tail visible behind, wrapped around waist
+
+Art style:
+- Painterly soft shading with airbrush transitions (NOT flat cel-shading)
+- Strong rim lighting from behind (warm orange/pink backlight)
+- Crisp outlines on character edges
+- Background: blurred misty mountain landscape with bokeh (deep purple/blue tones)
+- Floating particle effects (golden sparks)
+- Complementary color scheme: warm gold/orange character vs cool purple/blue background
+- Dynamic three-quarter action pose
+- High detail on armor textures (brushed metal), fabric, and skin
+- Resolution: portrait orientation, full body
+
+Mood: heroic, determined, slightly mischievous expression</div>
+  <button class="copy-btn" onclick="copyText(this)">📋 复制提示词</button>
+</div>
+
+<div class="prompt-box">
+  <h4>GPT-2：赵云（三国·富豪·魔幻觉醒）</h4>
+  <div class="prompt-meta">用途：角色风格参考 | 画幅：竖版全身 | 关键：龙魂觉醒银甲白袍</div>
+  <div class="prompt-content">Create a high-fidelity semi-realistic anime character illustration in the style of premium gacha games like Arknights and Honkai Impact 3rd.
+
+Character: Zhao Yun (赵云), awakened warrior form — a noble young Chinese general with dragon-soul awakening power.
+
+Design details:
+- Handsome masculine face, determined expression, sharp features
+- Silver eyes with faint dragon-pattern iris glow
+- Long silver-white hair tied in a warrior's topknot (Samurai-style ponytail) with loose strands
+- Wearing silver and white plate armor with blue dragon-scale patterns
+- White flowing battle cape with golden dragon embroidery
+- Holding a gleaming silver longsword (dragon胆 sword) with blue energy aura
+- Dragon energy aura: translucent blue dragon silhouette coiling around the blade
+- Small floating dragon-shaped energy particles around body
+
+Art style:
+- Painterly soft shading with airbrush transitions
+- Strong rim lighting from behind (cool cyan/blue backlight)
+- Crisp outlines on character edges
+- Background: blurred ancient Chinese battlefield at dawn, misty, bokeh (warm gold/orange sunrise tones)
+- Complementary color scheme: cool silver/blue character vs warm gold/orange background
+- Dynamic confident pose, sword pointed forward
+- High detail on armor (polished silver metal), cape fabric texture
+- Resolution: portrait orientation, full body
+
+Mood: noble, resolute, heroic guardian</div>
+  <button class="copy-btn" onclick="copyText(this)">📋 复制提示词</button>
+</div>
+
+<div class="prompt-box">
+  <h4>GPT-3：哪吒（封神·侠客·火莲觉醒）</h4>
+  <div class="prompt-meta">用途：角色风格参考 | 画幅：竖版全身 | 关键：火莲+乾坤圈+红绫</div>
+  <div class="prompt-content">Create a high-fidelity semi-realistic anime character illustration in the style of premium gacha games like Arknights and Honkai Impact 3rd.
+
+Character: Nezha (哪吒), fire-lotus awakened form — a young fierce warrior with divine fire abilities.
+
+Design details:
+- Youthful androgynous face, fierce determined expression, sharp eyes
+- Crimson red eyes with flame-like iris patterns
+- Black hair in twin-tops (twin bun style) with red ribbons, some hair strands flaming at tips
+- Wearing red and gold armor with lotus-flower motifs (chestplate shaped like lotus petals)
+- Arm guards with fire patterns, dark red legwraps
+- Two red arm rings (Universe Rings/乾坤圈) floating near shoulders, glowing
+- Holding a flaming spear (Fire-Tipped Spear/火尖枪) with orange-red fire trails
+- Red sash (红绫/Red Armillary Sash) flowing dynamically around body like ribbons
+- Lotus flower energy platform beneath feet, glowing pink-orange
+
+Art style:
+- Painterly soft shading with airbrush transitions
+- Strong rim lighting (warm orange/gold backlight)
+- Crisp outlines on character edges
+- Background: blurred lotus pond with fire and embers floating, bokeh (deep red/purple tones)
+- Floating fire particles and lotus petal effects
+- Complementary color scheme: warm red/orange character vs deep purple/dark background
+- Dynamic action pose, mid-leap with spear thrust
+- High detail on armor (gold filigree), fire effects
+- Resolution: portrait orientation, full body
+
+Mood: fierce, youthful, divine warrior energy</div>
+  <button class="copy-btn" onclick="copyText(this)">📋 复制提示词</button>
+</div>
+
+<div class="prompt-box">
+  <h4>GPT-4：UI主界面</h4>
+  <div class="prompt-meta">用途：UI风格参考 | 画幅：9:16竖版 | 关键：金色边框+蓝色能量+中央角色</div>
+  <div class="prompt-content">Create a mobile card game main UI screen design in the style of premium anime gacha games (like Million Arthur, Arknights, Granblue Fantasy).
+
+Layout:
+- Top bar: player info (avatar, level, name), currency icons (gold, gems) with semi-transparent dark blue background
+- Left sidebar: vertical icon buttons (Home, Story, Cards, Shop, Settings) with golden frame and blue glow
+- Right sidebar: notification bell, friend list, mail icon
+- Bottom center: large circular "BATTLE" button in gold with blue energy ring
+- Bottom: card deck preview showing 5 card backs in a fan layout
+
+Center: Main character display area showing a full-body character (anime style, standing on a glowing platform)
+
+Background art:
+- Mystical floating island or ancient temple ruins with blue energy veins
+- Glowing geometric structures floating in background (cyan glow)
+- Volumetric light beams from above
+- Particle effects: floating blue energy motes
+- Color palette: deep navy blue background, cyan/blue energy accents, gold UI elements
+- UI frame style: ornate gold borders with blue gem inlays, semi-transparent dark panels
+- Overall mood: premium, mystical, inviting
+
+Resolution: 9:16 vertical (mobile portrait), 1080x1920</div>
+  <button class="copy-btn" onclick="copyText(this)">📋 复制提示词</button>
+</div>
+
+<div class="prompt-box">
+  <h4>GPT-5：场景</h4>
+  <div class="prompt-meta">用途：场景风格参考 | 画幅：16:9横版 | 关键：悬浮几何+蓝色能量+体积光</div>
+  <div class="prompt-content">Create a 3D game scene background art in the style of sci-fi fantasy card games.
+
+Scene: An ancient mystical battlefield arena floating in a void — blending Chinese fantasy temple architecture with glowing energy technology.
+
+Elements:
+- Central platform: circular tiered stone stage with glowing blue energy lines etched into surface
+- Floating geometric structures: fragmented cubes and pyramids suspended in air, with cyan energy veins
+- Background: massive ancient stone pillars (Chinese temple style) with glowing energy cracks
+- Sky/vault: deep purple-blue gradient void with floating debris and energy particles
+- Light source: volumetric god rays from above, illuminating center platform
+- Water/energy effect: a stream of glowing blue pixels cascading from floating structures
+- Fog: atmospheric volumetric haze at bottom, glowing cyan
+
+Color palette:
+- Dominant: deep navy blue (#0a1a3a) to indigo (#1a0a3a)
+- Accent: electric cyan (#00ffff) and turquoise (#40e0d0)
+- Warm accent: small gold/orange light sources for contrast
+- Overall temperature: cool, mysterious, sacred
+
+Style: 3D rendered, stylized realism, slightly painterly post-processing
+Resolution: 16:9 landscape, 1920x1080
+Mood: epic, vast, otherworldly, ancient power</div>
+  <button class="copy-btn" onclick="copyText(this)">📋 复制提示词</button>
+</div>
+</div>
+
+<!-- ========== Tab 3: 香蕉提示词 ========== -->
+<div id="tab-banana" class="tab-content">
+<h2>🍌 香蕉最新版提示词（5张）</h2>
+<p style="font-size:13px;color:var(--text-dim)">香蕉版为精简自然语言提示词，适合文生图模型直接使用。</p>
+
+<div class="prompt-box" style="border-left-color:var(--orange)">
+  <h4 style="color:var(--orange)">香蕉-1：悟空（西游·侠客·人类化）</h4>
+  <div class="prompt-meta">用途：角色风格参考 | 关键：人类化美猴王</div>
+  <div class="prompt-content">A high-quality anime game character illustration of Sun Wukong (Monkey King) in humanized warrior form. He is a handsome young male warrior with golden irises, subtle golden facial markings, a golden forehead circlet with orange gem, spiky golden-brown hair, and pointed monkey-ear decorations. He wears golden armor over a dark navy bodysuit with a red flowing scarf. He holds a golden staff diagonally. A monkey tail wraps around his waist. The art style is semi-realistic anime with painterly shading, strong rim lighting in warm orange, and a blurred purple-blue mountain background with floating golden sparks. Dynamic three-quarter action pose, full body, portrait orientation. Premium gacha game art quality.</div>
+  <button class="copy-btn" onclick="copyText(this)">📋 复制提示词</button>
+</div>
+
+<div class="prompt-box" style="border-left-color:var(--orange)">
+  <h4 style="color:var(--orange)">香蕉-2：赵云（三国·富豪·魔幻觉醒）</h4>
+  <div class="prompt-meta">用途：角色风格参考 | 关键：龙魂觉醒银甲白袍</div>
+  <div class="prompt-content">A high-quality anime game character illustration of Zhao Yun, a noble Chinese general with dragon-soul awakening. He has silver eyes with dragon-pattern iris glow, silver-white hair in a warrior topknot, wearing silver and white plate armor with blue dragon-scale patterns, and a white cape with golden dragon embroidery. He holds a silver longsword with blue dragon energy aura coiling around it. Floating dragon-shaped energy particles surround him. Semi-realistic anime style with painterly shading, strong cyan rim lighting, blurred ancient battlefield at dawn with warm gold sunrise bokeh. Complementary silver/blue vs gold/orange color scheme. Confident heroic pose, full body, portrait orientation. Premium gacha game art quality.</div>
+  <button class="copy-btn" onclick="copyText(this)">📋 复制提示词</button>
+</div>
+
+<div class="prompt-box" style="border-left-color:var(--orange)">
+  <h4 style="color:var(--orange)">香蕉-3：哪吒（封神·侠客·火莲觉醒）</h4>
+  <div class="prompt-meta">用途：角色风格参考 | 关键：火莲+乾坤圈+红绫</div>
+  <div class="prompt-content">A high-quality anime game character illustration of Nezha as a fierce young divine warrior with fire abilities. He has crimson red eyes with flame patterns, black hair in twin buns with red ribbons and flaming tips. He wears red and gold armor with lotus-flower motifs, fire-pattern arm guards, and holds a flaming fire-tipped spear. Two glowing red arm rings float near his shoulders. A red sash flows dynamically around his body like ribbons. A lotus energy platform glows beneath his feet. Semi-realistic anime style with painterly shading, warm orange rim lighting, blurred lotus pond background with floating embers, deep red-purple tones. Dynamic mid-leap action pose with spear thrust, full body, portrait orientation. Premium gacha game art quality.</div>
+  <button class="copy-btn" onclick="copyText(this)">📋 复制提示词</button>
+</div>
+
+<div class="prompt-box" style="border-left-color:var(--orange)">
+  <h4 style="color:var(--orange)">香蕉-4：UI主界面</h4>
+  <div class="prompt-meta">用途：UI风格参考 | 关键：金色边框+蓝色能量+中央角色</div>
+  <div class="prompt-content">A mobile card game main UI screen, vertical 9:16 format, in premium anime gacha game style. Top bar with player avatar, level, and currency icons (gold, gems) on dark blue semi-transparent background. Left sidebar with vertical golden-framed icon buttons. Bottom center has a large gold BATTLE button with blue energy ring. Center shows a full-body anime character on a glowing platform. Background is a mystical floating island with ancient temple ruins, glowing blue energy veins, floating geometric structures, volumetric light beams, and blue energy particles. Color palette: deep navy blue, cyan accents, gold UI elements. Ornate gold borders with blue gem inlays. Mood: premium, mystical, inviting.</div>
+  <button class="copy-btn" onclick="copyText(this)">📋 复制提示词</button>
+</div>
+
+<div class="prompt-box" style="border-left-color:var(--orange)">
+  <h4 style="color:var(--orange)">香蕉-5：场景</h4>
+  <div class="prompt-meta">用途：场景风格参考 | 关键：悬浮几何+蓝色能量+体积光</div>
+  <div class="prompt-content">A 3D game scene background of an ancient mystical battlefield arena floating in a void, blending Chinese fantasy temple architecture with glowing energy technology. Central circular tiered stone stage with glowing blue energy lines. Floating fragmented cubes and pyramids with cyan energy veins. Massive ancient Chinese temple stone pillars with glowing energy cracks. Deep purple-blue gradient void sky with floating debris. Volumetric god rays from above. Glowing blue pixel stream cascading. Atmospheric cyan fog at bottom. Color palette: deep navy to indigo, electric cyan and turquoise accents, small warm gold light sources. 3D rendered stylized realism, 16:9 landscape. Mood: epic, vast, otherworldly, ancient power.</div>
+  <button class="copy-btn" onclick="copyText(this)">📋 复制提示词</button>
+</div>
+</div>
+
+<!-- ========== Tab 4: 三方案角色对比 ========== -->
+<div id="tab-compare" class="tab-content">
+<h2>三方案4主角对比</h2>
+
+<div class="summary-grid">
+  <div class="summary-card" style="border-left:4px solid var(--purple)">
+    <h4>🔮 封神演义（4周·纯换贴图）</h4>
+    <table style="width:100%;font-size:13px">
+      <tr><td style="color:var(--purple);font-weight:600">侠客</td><td>哪吒 🔥<br>火尖枪+乾坤圈(保留骨骼名)</td></tr>
+      <tr><td style="color:var(--purple);font-weight:600">佣兵</td><td>杨戬 ⚔️<br>三尖两刃刀(保留骨骼名)</td></tr>
+      <tr><td style="color:var(--purple);font-weight:600">歌姬</td><td>妲己 🦊<br>琵琶(吉他换贴图✅)</td></tr>
+      <tr><td style="color:var(--purple);font-weight:600">富豪</td><td>姜子牙 🎣<br>打神鞭(保留骨骼名)</td></tr>
+    </table>
+    <p style="margin-top:8px"><span class="tag tag-green">全人形</span><span class="tag tag-green">0认知割裂</span><span class="tag tag-green">影视热度高</span></p>
+  </div>
+
+  <div class="summary-card" style="border-left:4px solid var(--green)">
+    <h4>🀄 西游人类化（7.5周·换蒙皮）</h4>
+    <table style="width:100%;font-size:13px">
+      <tr><td style="color:var(--purple);font-weight:600">侠客</td><td>悟空 🐵<br>金箍棒(保留骨骼名)⚠️人类化</td></tr>
+      <tr><td style="color:var(--purple);font-weight:600">佣兵</td><td>八戒 🐗<br>钉耙(保留骨骼名)⚠️人类化</td></tr>
+      <tr><td style="color:var(--purple);font-weight:600">歌姬</td><td>唐僧 🧑<br>锡杖(❌弹锡杖违和)</td></tr>
+      <tr><td style="color:var(--purple);font-weight:600">富豪</td><td>沙僧 ⚔️<br>降妖宝杖(保留骨骼名)</td></tr>
+    </table>
+    <p style="margin-top:8px"><span class="tag tag-yellow">需人类化</span><span class="tag tag-red">认知割裂</span><span class="tag tag-red">歌姬违和</span></p>
+  </div>
+
+  <div class="summary-card" style="border-left:4px solid var(--orange)">
+    <h4>⚔️ 魔幻三国（4周·武器不改）</h4>
+    <table style="width:100%;font-size:13px">
+      <tr><td style="color:var(--purple);font-weight:600">侠客</td><td>张辽 🗡️<br>双匕首不改(逍遥双刃)</td></tr>
+      <tr><td style="color:var(--purple);font-weight:600">佣兵</td><td>孙策 ⚔️<br>大刀不改(霸王刀)</td></tr>
+      <tr><td style="color:var(--purple);font-weight:600">歌姬</td><td>貂蝉 💃<br>琵琶(吉他换贴图✅)</td></tr>
+      <tr><td style="color:var(--purple);font-weight:600">富豪</td><td>赵云 🐉<br>剑不改(龙胆剑)</td></tr>
+    </table>
+    <p style="margin-top:8px"><span class="tag tag-green">全人形</span><span class="tag tag-green">武器不改</span><span class="tag tag-green">认知度最高</span></p>
+  </div>
+</div>
+
+<h3>歌姬武器兼容性对比</h3>
+<table class="dim-table">
+<thead><tr><th>方案</th><th>歌姬角色</th><th>吉他17骨→</th><th>语义兼容</th></tr></thead>
+<tbody>
+<tr><td>封神</td><td>妲己</td><td style="color:var(--green)">琵琶(换贴图)</td><td style="color:var(--green)">✅ 弹琵琶=弹吉他</td></tr>
+<tr><td>西游</td><td>唐僧</td><td style="color:var(--red)">锡杖(换模型)</td><td style="color:var(--red)">❌ 弹锡杖违和</td></tr>
+<tr><td>三国</td><td>貂蝉</td><td style="color:var(--green)">琵琶(换贴图)</td><td style="color:var(--green)">✅ 弹琵琶=弹吉他</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ========== Tab 5: 换蒙皮技术要点 ========== -->
+<div id="tab-tech" class="tab-content">
+<h2>换蒙皮技术要点</h2>
+
+<div class="note">
+  <strong>核心策略：</strong>保留骨架+动画，只换蒙皮网格+贴图。保留原武器骨骼名=0动画改动。<br>
+  <strong>人类化原则：</strong>不做动物脸！做人脸+特征装饰。保留面部BlendShape。
+</div>
+
+<h3>原武器骨骼实测数据</h3>
+<table class="dim-table">
+<thead><tr><th>角色</th><th>原武器</th><th>武器骨骼</th><th>骨骼数</th><th>动画引用率</th></tr></thead>
+<tbody>
+<tr><td>侠客(FH01)</td><td>双匕首+鞘</td><td>swordRoot, scabbardRoot, Bone100, Bone065</td><td>5</td><td style="color:var(--red)">100%</td></tr>
+<tr><td>佣兵(YB01)</td><td>大刀</td><td>SwordRoot, weaponRoot1, Bone001~011, reRoot</td><td>14</td><td style="color:var(--red)">98%</td></tr>
+<tr><td>歌姬(GJ01)</td><td>吉他</td><td>guitarRoot, weapon1_01~04, weapon2_1~23, swordRoot</td><td>17</td><td style="color:var(--yellow)">82%</td></tr>
+<tr><td>富豪(DZ01)</td><td>剑(变形骨)</td><td>weaponRoot, gunRoot, weapon, bone52~71, reRoot</td><td>9</td><td style="color:var(--red)">100%</td></tr>
+</tbody>
+</table>
+
+<h3>三方案武器处理</h3>
+<table class="dim-table">
+<thead><tr><th>角色</th><th>封神</th><th>西游</th><th>三国</th></tr></thead>
+<tbody>
+<tr><td>侠客</td><td>换模型(保留骨骼名)</td><td>换模型(保留骨骼名)</td><td style="color:var(--green)">不改</td></tr>
+<tr><td>佣兵</td><td>换模型(保留骨骼名)</td><td>换模型(保留骨骼名)</td><td style="color:var(--green)">不改</td></tr>
+<tr><td>歌姬</td><td style="color:var(--green)">换贴图(吉他→琵琶)</td><td style="color:var(--red)">换模型(吉他→锡杖)违和</td><td style="color:var(--green)">换贴图(吉他→琵琶)</td></tr>
+<tr><td>富豪</td><td>换模型(保留骨骼名)</td><td>换模型(保留骨骼名)</td><td style="color:var(--green)">不改</td></tr>
+</tbody>
+</table>
+
+<h3>保留不动的（0工作量）</h3>
+<table class="dim-table">
+<thead><tr><th>资产</th><th>数量</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>骨架(Skeleton)</td><td>全部</td><td>Humanoid Rig完全不动</td></tr>
+<tr><td>动画(Animation)</td><td>5,365+993</td><td>剧情+主角动画全部复用</td></tr>
+<tr><td>动画控制器</td><td>328</td><td>状态机完全复用</td></tr>
+<tr><td>Avatar</td><td>全部</td><td>Humanoid配置不动</td></tr>
+</tbody>
+</table>
+
+<h3>人类化的代价对比</h3>
+<table class="dim-table">
+<thead><tr><th>做法</th><th>面部表情</th><th>口型同步</th><th>Spine</th><th>过场</th><th>Q版</th></tr></thead>
+<tbody>
+<tr><td>人类化(推荐)</td><td style="color:var(--green)">✅保留换贴图</td><td style="color:var(--green)">✅保留</td><td style="color:var(--green)">✅保留换贴图</td><td style="color:var(--green)">✅保留</td><td style="color:var(--green)">✅保留</td></tr>
+<tr><td>做动物脸(不推荐)</td><td style="color:var(--red)">❌430张贴图全废</td><td style="color:var(--red)">❌全部重做</td><td style="color:var(--red)">❌47组重做</td><td style="color:var(--red)">❌597个重调</td><td style="color:var(--red)">❌27个重做</td></tr>
+</tbody>
+</table>
+</div>
+
+<script>
+function switchTab(t){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));event.target.classList.add('active');document.getElementById('tab-'+t).classList.add('active')}
+function copyText(btn){
+  var text=btn.previousElementSibling.textContent;
+  navigator.clipboard.writeText(text).then(function(){
+    btn.textContent='✅ 已复制';
+    setTimeout(function(){btn.textContent='📋 复制提示词'},2000);
+  });
+}
+</script>
+</body>
+</html>
