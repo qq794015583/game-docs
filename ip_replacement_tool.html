@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>零成本IP置换分析工具 v8 — 三选一终选</title>
+<style>
+:root{--bg:#0d1117;--bg-card:#161b22;--bg-hover:#1c2128;--border:#30363d;--text:#e6edf3;--text-dim:#8b949e;--accent:#58a6ff;--accent-dim:#1f6feb;--green:#3fb950;--yellow:#d29922;--red:#f85149;--purple:#bc8cff;--orange:#db6d28}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif;line-height:1.6;padding:20px}
+h1{font-size:28px;margin-bottom:8px}h2{font-size:22px;margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px}h3{font-size:17px;margin:16px 0 8px;color:var(--accent)}h4{font-size:15px;margin:12px 0 6px}.subtitle{color:var(--text-dim);margin-bottom:24px;font-size:14px}
+.tab-bar{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--border);flex-wrap:wrap}.tab{padding:10px 20px;cursor:pointer;border:none;background:none;color:var(--text-dim);font-size:14px;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}.tab:hover{color:var(--text)}.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{display:none}.tab-content.active{display:block}
+.plot-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px}.plot-card h4{color:var(--purple);margin-bottom:6px}.plot-card .role{display:inline-block;background:var(--accent-dim);color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;margin-left:8px}.plot-card .desc{color:var(--text-dim);font-size:13px}
+.mapping-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}.mapping-table th{background:var(--bg-card);color:var(--accent);padding:10px;text-align:left;border-bottom:2px solid var(--border);font-weight:600;position:sticky;top:0}.mapping-table td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top}.mapping-table tr:hover td{background:var(--bg-hover)}.mapping-table .orig{color:var(--purple);font-weight:500}.mapping-table .repl{color:var(--green)}
+.note{background:rgba(56,139,253,.1);border:1px solid var(--accent-dim);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:13px}.note strong{color:var(--accent)}
+.chapter-box{background:var(--bg-card);border:1px solid var(--border);border-left:4px solid var(--purple);border-radius:8px;padding:16px;margin:12px 0}.chapter-box .ch-title{font-size:16px;font-weight:700;color:var(--accent);margin-bottom:8px}.chapter-box .ch-summary{font-size:13px;color:var(--text-dim);margin-bottom:8px}.chapter-box .ch-key-events{font-size:13px}.chapter-box .ch-key-events li{margin:4px 0 4px 20px;list-style-type:disc}
+.dim-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}.dim-table th{background:var(--bg-card);color:var(--accent);padding:8px;border-bottom:2px solid var(--border)}.dim-table td{padding:8px;border-bottom:1px solid var(--border);text-align:center}.dim-table td:first-child{text-align:left;color:var(--purple);font-weight:600}.dim-table tr:hover td{background:var(--bg-hover)}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:16px 0}.summary-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px}.summary-card h4{color:var(--accent);margin-bottom:8px}.detail-list{font-size:13px}.detail-list li{margin:4px 0 4px 20px;list-style-type:none}.detail-list .check{color:var(--green)}.detail-list .warn{color:var(--yellow)}.detail-list .cross{color:var(--red)}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}.tag-green{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3)}.tag-yellow{background:rgba(210,153,34,.15);color:var(--yellow);border:1px solid rgba(210,153,34,.3)}.tag-red{background:rgba(248,81,73,.15);color:var(--red);border:1px solid rgba(248,81,73,.3)}
+.char-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;margin:8px 0;display:flex;gap:16px;align-items:flex-start}.char-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}.char-info{flex:1}.char-info .char-name{font-size:15px;font-weight:700;color:var(--accent)}.char-info .char-role{font-size:12px;color:var(--text-dim);margin-bottom:4px}.char-info .char-desc{font-size:13px;color:var(--text-dim)}
+.source-list{font-size:13px;color:var(--text-dim);line-height:1.8}.source-list code{background:var(--bg-card);padding:2px 6px;border-radius:4px;font-size:12px;color:var(--green)}
+.storyline{position:relative;padding-left:24px;margin:16px 0}.storyline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)}.storyline-item{position:relative;margin-bottom:16px}.storyline-item::before{content:'';position:absolute;left:-20px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}.storyline-item h5{font-size:14px;margin-bottom:4px}.storyline-item p{font-size:13px;color:var(--text-dim)}
+::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--text-dim)}
+</style>
+</head>
+<body>
+
+<h1>🔀 零成本IP置换分析工具 v8 — 三选一终选</h1>
+<p class="subtitle">封神演义 vs 西游人类化 vs 魔幻三国 · 主角已选定 · 武器骨骼实测 · 终选</p>
+
+<div class="note">
+  <strong>三轮淘汰后终选三方案：</strong><br>
+  ① 🔮 封神演义 — 哪吒/杨戬/妲己/姜子牙。全人形纯换贴图，武器骨骼完美匹配。4周工期。<br>
+  ② 🀄 西游人类化 — 悟空/八戒/唐僧/沙僧。需人类化换蒙皮，有认知割裂风险。7.5周工期。<br>
+  ③ ⚔️ 魔幻三国 — 张辽/孙策/貂蝉/赵云。武器不改纯换贴图，觉醒系统。4周工期。<br><br>
+  <strong>核心变化（vs v7）：</strong>封神从西游中拆离为独立方案。封神4角色全人形，不需要人类化，工期与三国持平。
+</div>
+
+<div class="tab-bar">
+  <button class="tab active" onclick="switchTab('original')">📋 原剧情结构</button>
+  <button class="tab" onclick="switchTab('compare')">📊 三方案总对比</button>
+  <button class="tab" onclick="switchTab('character')">👤 主角设计</button>
+  <button class="tab" onclick="switchTab('weapon')">🔧 武器系统</button>
+  <button class="tab" onclick="switchTab('chapter')">📖 逐章映射</button>
+  <button class="tab" onclick="switchTab('score')">🏆 综合评分</button>
+  <button class="tab" onclick="switchTab('sources')">📂 数据来源</button>
+</div>
+
+<!-- ========== Tab 1: 原剧情结构 ========== -->
+<div id="tab-original" class="tab-content active">
+<h2>原IP核心世界观</h2>
+<div class="plot-card"><h4>「环」系统 <span class="role">核心机制</span></h4><p class="desc">高维造物主/愿望机。从被毁灭的文明中召唤"受试者"进行试炼。环的代行系统以机械遗迹形态出现，通过考验授予"巴德尔"之力。每次轮回都用"代行者"的死亡换来重启。小女孩=世界本身，乌鸦=放弃的意志，漆黑女性=环的化身。</p></div>
+<div class="plot-card"><h4>巴德尔（希望因子） <span class="role">正面力量</span></h4><p class="desc">末世拯救者之力。被环选中并注入"原质"力量的受试者。代表光明与重生。</p></div>
+<div class="plot-card"><h4>霍德尔（绝望因子） <span class="role">反面力量</span></h4><p class="desc">与魔神签订契约之人，导致文明走向毁灭。就隐藏在亚瑟候补之中——核心悬疑点。</p></div>
+<div class="plot-card"><h4>不列颠文明覆灭 <span class="role">背景事件</span></h4><p class="desc">不列颠被黑泥怪物（庇斯特）淹没，环召唤了983,067名幸存者进入九界试炼。</p></div>
+<div class="plot-card"><h4>法莎莉雅 <span class="role">核心NPC</span></h4><p class="desc">象征文明毁灭的妖精。黄昏石板预言：创造（奥丁）与毁灭（法莎莉雅）结合将重启世界。前期似反派实为守护者。</p></div>
+<div class="plot-card"><h4>奥丁 <span class="role">神王</span></h4><p class="desc">九界神王，象征创造。在间章中以嘲讽态度点评亚瑟表现，暗示无数次轮回全部失败。</p></div>
+<div class="plot-card"><h4>诗嘉古尔 <span class="role">幕后黑手</span></h4><p class="desc">神秘神使，与帝国勾结，操纵耶梦加得吞噬法莎莉雅，最终夺走法莎莉雅。</p></div>
+<div class="plot-card"><h4>帝国 <span class="role">敌对势力</span></h4><p class="desc">冯·阿什（副指挥官/激进）和冯·德·坦恩（指挥官/骑士精神）率领。与诗嘉古尔勾结。</p></div>
+<div class="plot-card"><h4>四种职业 <span class="role">角色体系</span></h4><p class="desc">侠客（盗贼/敏捷暗杀）、佣兵（力量/近战）、歌姬（辅助/治疗）、富豪（防御/财富）。另有"技巧之场"为第五职业。</p></div>
+
+<h2>主线剧情 · 逐章概要</h2>
+<div class="chapter-box"><div class="ch-title">开篇：环之墟</div><div class="ch-summary">小女孩寻找环印记，漆黑女性告知最后一次机会。此前无数次轮回全部失败。</div></div>
+<div class="chapter-box"><div class="ch-title">序章：环的试炼</div><div class="ch-summary">侠客遗迹觉醒，注入原质之力。三亚瑟看到光柱。</div></div>
+<div class="chapter-box"><div class="ch-title">第一章：汇合的四人</div><div class="ch-summary">四人合流，遇丹蒂，击败巨人村长。【间章】诗嘉古尔密谋。</div></div>
+<div class="chapter-box"><div class="ch-title">第二章：愤怒的巨龙</div><div class="ch-summary">法莎莉雅出现，石板触发，奥丁苏醒。</div></div>
+<div class="chapter-box"><div class="ch-title">第三章：重逢与分别</div><div class="ch-summary">奥丁vs法莎莉雅，耶梦加得吞噬法莎莉雅。龙山击败冯·阿什。</div></div>
+<div class="chapter-box"><div class="ch-title">第四章：钢铁的要塞</div><div class="ch-summary">潜入要塞，窃听阴谋，卡拉丁救援。</div></div>
+<div class="chapter-box"><div class="ch-title">第五章：海底迷踪</div><div class="ch-summary">海底都市，耶梦加得苏醒，四人被吞。</div></div>
+<div class="chapter-box"><div class="ch-title">第六章：蛇腹之旅</div><div class="ch-summary">幻境揭示敌人过往，击败主脑，诗嘉古尔夺走法莎莉雅。</div></div>
+<div class="chapter-box"><div class="ch-title">第七章：猩红之地</div><div class="ch-summary">坠落异域，技巧之场登场，称亚瑟为霍德尔。</div></div>
+</div>
+
+<!-- ========== Tab 2: 三方案总对比 ========== -->
+<div id="tab-compare" class="tab-content">
+<h2>三方案总对比</h2>
+
+<div class="summary-grid">
+  <div class="summary-card" style="border-left:4px solid var(--purple)">
+    <h4>🔮 封神演义</h4>
+    <p style="font-size:13px;color:var(--text-dim)">哪吒/杨戬/妲己/姜子牙。全人形纯换贴图。封神榜=环选拔，法宝=骑士卡，阐截两教=两阵营。2023电影热度高。</p>
+    <div style="margin-top:8px"><span class="tag tag-green">全人形</span><span class="tag tag-green">仙术</span><span class="tag tag-green">法宝</span><span class="tag tag-green">4周</span></div>
+  </div>
+  <div class="summary-card" style="border-left:4px solid var(--green)">
+    <h4>🀄 西游人类化</h4>
+    <p style="font-size:13px;color:var(--text-dim)">悟空/八戒/唐僧/沙僧。需人类化换蒙皮。八十一难=试炼。有认知割裂风险（人脸猴子）。</p>
+    <div style="margin-top:8px"><span class="tag tag-yellow">需人类化</span><span class="tag tag-green">妖怪</span><span class="tag tag-yellow">7.5周</span><span class="tag tag-yellow">认知割裂</span></div>
+  </div>
+  <div class="summary-card" style="border-left:4px solid var(--orange)">
+    <h4>⚔️ 魔幻三国</h4>
+    <p style="font-size:13px;color:var(--text-dim)">张辽/孙策/貂蝉/赵云。武器不改纯换贴图。觉醒系统让特效可复用。认知度最高。</p>
+    <div style="margin-top:8px"><span class="tag tag-green">全人形</span><span class="tag tag-green">觉醒</span><span class="tag tag-green">武器不改</span><span class="tag tag-green">4周</span></div>
+  </div>
+</div>
+
+<h3>核心概念对比</h3>
+<table class="mapping-table">
+<thead><tr><th>原IP元素</th><th>🔮 封神演义</th><th>🀄 西游人类化</th><th>⚔️ 魔幻三国</th></tr></thead>
+<tbody>
+<tr><td class="orig">环系统</td><td class="repl"><strong>封神榜</strong> — 天庭下达封神令，选拔365正神</td><td class="repl">如来佛祖 — 设计取经路线，安排八十一难</td><td class="repl"><strong>觉醒石系统</strong> — 天降觉醒石，选中武将</td></tr>
+<tr><td class="orig">巴德尔</td><td class="repl">封神之力/法宝 — 获得封神榜认可</td><td class="repl">大乘佛法/真经</td><td class="repl"><strong>龙魂之力</strong></td></tr>
+<tr><td class="orig">霍德尔</td><td class="repl">妲己/九尾狐 — 受女娲之命迷惑纣王</td><td class="repl">六耳猕猴/心魔</td><td class="repl"><strong>魔魂觉醒者</strong> — 被黑暗觉醒石侵蚀</td></tr>
+<tr><td class="orig">文明覆灭</td><td class="repl">商朝覆灭 — 纣王无道，天怒人怨</td><td class="repl">大唐遭劫/妖魔横行</td><td class="repl"><strong>黄巾妖乱</strong></td></tr>
+<tr><td class="orig">法莎莉雅</td><td class="repl"><strong>妲己</strong> — 美丽致命，背负使命的守护者</td><td class="repl">女儿国国王</td><td class="repl"><strong>貂蝉</strong>（双重身份）</td></tr>
+<tr><td class="orig">奥丁</td><td class="repl">元始天尊/鸿钧老祖</td><td class="repl">如来佛祖</td><td class="repl"><strong>左慈/于吉</strong></td></tr>
+<tr><td class="orig">诗嘉古尔</td><td class="repl">申公豹/女娲</td><td class="repl">观音/太上老君</td><td class="repl"><strong>南华老仙</strong></td></tr>
+<tr><td class="orig">帝国</td><td class="repl">商朝+截教</td><td class="repl">天庭/妖王</td><td class="repl"><strong>曹魏+妖兽军团</strong></td></tr>
+<tr><td class="orig">试炼</td><td class="repl">破阵闯关 — 十绝阵/诛仙阵/万仙阵</td><td class="repl">八十一难</td><td class="repl"><strong>战役试炼</strong> — 八阵图=幻境</td></tr>
+<tr><td class="orig">文明重启</td><td class="repl">武王伐纣，封神榜完成</td><td class="repl">取得真经</td><td class="repl"><strong>三分归晋+觉醒石碎裂</strong></td></tr>
+</tbody>
+</table>
+
+<h3>十维度评分</h3>
+<table class="dim-table">
+<thead><tr><th>维度</th><th>权重</th><th>🔮 封神</th><th>🀄 西游</th><th>⚔️ 三国</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>剧情匹配度</td><td>15%</td><td style="color:var(--green)">88</td><td style="color:var(--green)">90</td><td style="color:var(--green)">85</td><td>西游八十一难最匹配</td></tr>
+<tr><td>角色丰富度</td><td>10%</td><td style="color:var(--green)">85</td><td style="color:var(--green)">85</td><td style="color:var(--green)">95</td><td>三国武将最多</td></tr>
+<tr><td>超自然元素</td><td>10%</td><td style="color:var(--green)">100</td><td style="color:var(--green)">100</td><td style="color:var(--green)">80</td><td>封神西游原生100</td></tr>
+<tr><td>试炼/关卡感</td><td>10%</td><td style="color:var(--green)">85</td><td style="color:var(--green)">95</td><td style="color:var(--green)">85</td><td>八十一难最强</td></tr>
+<tr><td>四职业适配</td><td>5%</td><td style="color:var(--green)">95</td><td style="color:var(--yellow)">85</td><td style="color:var(--green)">95</td><td>封神三国全人形</td></tr>
+<tr><td>国内认知度</td><td>5%</td><td style="color:var(--green)">90</td><td style="color:var(--green)">95</td><td style="color:var(--green)">98</td><td>三国最高</td></tr>
+<tr><td>美术复用率</td><td>15%</td><td style="color:var(--green)">82</td><td style="color:var(--green)">80</td><td style="color:var(--green)">85</td><td>三国武器不改</td></tr>
+<tr><td>特效适配</td><td>10%</td><td style="color:var(--green)">85</td><td style="color:var(--green)">85</td><td style="color:var(--green)">80</td><td>仙术=魔法</td></tr>
+<tr><td>卡牌适配</td><td>10%</td><td style="color:var(--green)">85</td><td style="color:var(--green)">85</td><td style="color:var(--green)">95</td><td>武将最多</td></tr>
+<tr><td>版权安全性</td><td>10%</td><td style="color:var(--green)">100</td><td style="color:var(--green)">100</td><td style="color:var(--green)">100</td><td>公有领域</td></tr>
+</tbody>
+<tfoot><tr><td><strong>加权总分</strong></td><td>100%</td><td style="color:var(--green)"><strong>89</strong></td><td style="color:var(--green)"><strong>89</strong></td><td style="color:var(--green)"><strong>88</strong></td><td></td></tr></tfoot>
+</table>
+
+<div class="note">
+  <strong>关键变化：</strong>封神拆离后独立评分89，与西游持平(89)，三国88紧随。<strong>三方案仅差1分，完全并驾齐驱。</strong><br>
+  封神的优势：全人形(不割裂)+工期短(4周)+影视热度高(2023封神电影)<br>
+  西游的优势：八十一难=试炼最完美+场景复用最高<br>
+  三国的优势：角色最多+武器不改+认知度最高
+</div>
+</div>
+
+<!-- ========== Tab 3: 主角设计 ========== -->
+<div id="tab-character" class="tab-content">
+<h2>主角设计 — 三方案4职业对比</h2>
+
+<h3>🔮 封神演义 — 全人形纯换贴图（4周）</h3>
+
+<div class="char-card" style="border-left:4px solid var(--purple)">
+  <div class="char-avatar" style="background:rgba(188,140,255,.2)">🔥</div>
+  <div class="char-info">
+    <div class="char-name">哪吒 → 火莲觉醒者</div>
+    <div class="char-role">侠客 · 纯换贴图 · 武器换模型保留骨骼名</div>
+    <div class="char-desc">
+      <strong>影视热度：</strong>《哪吒之魔童降世》2019票房50亿+《封神第一部》2023<br>
+      <strong>武器：</strong>火尖枪+乾坤圈。保留swordRoot+scabbardRoot+Bone100+Bone065<br>
+      <strong>蒙皮：</strong>网格保留，只换贴图（红绫+金甲+莲花装饰）<br>
+      <strong>面部：</strong>直接复用换脸贴图。少年英气面孔<br>
+      <strong>骨骼/动画改动：</strong><strong>0</strong> · <strong>工期：1周</strong>
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--purple)">
+  <div class="char-avatar" style="background:rgba(91,44,111,.2)">⚔️</div>
+  <div class="char-info">
+    <div class="char-name">杨戬 → 天眼觉醒者</div>
+    <div class="char-role">佣兵 · 纯换贴图 · 武器换模型保留骨骼名</div>
+    <div class="char-desc">
+      <strong>影视热度：</strong>《新神榜：杨戬》2022+《封神第一部》2023<br>
+      <strong>武器：</strong>三尖两刃刀。保留SwordRoot+Bone001~011。大刀骨骼完美对应大型兵器<br>
+      <strong>蒙皮：</strong>网格保留，只换贴图（银甲+天眼额饰+哮天犬装饰）<br>
+      <strong>面部：</strong>直接复用换脸贴图。英武面孔+额头天眼贴图<br>
+      <strong>骨骼/动画改动：</strong><strong>0</strong> · <strong>工期：1周</strong>
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--purple)">
+  <div class="char-avatar" style="background:rgba(188,140,255,.2)">🦊</div>
+  <div class="char-info">
+    <div class="char-name">妲己 → 九尾觉醒者</div>
+    <div class="char-role">歌姬 · 纯换贴图 · 吉他→换贴图成琵琶</div>
+    <div class="char-desc">
+      <strong>影视热度：</strong>《封神第一部》2023（娜然饰妲己），大热<br>
+      <strong>武器：</strong>琵琶！吉他17骨(guitarRoot+weapon1/2)→琵琶外观，只换武器贴图<br>
+      <strong>蒙皮：</strong>网格保留，只换贴图（华丽宫装+狐尾装饰）<br>
+      <strong>面部：</strong>直接复用换女性脸贴图。妖艳面孔<br>
+      <strong>骨骼/动画改动：</strong><strong>0</strong>（"弹琵琶"="弹吉他"完美兼容） · <strong>工期：1周</strong>
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--purple)">
+  <div class="char-avatar" style="background:rgba(91,44,111,.2)">🎣</div>
+  <div class="char-info">
+    <div class="char-name">姜子牙 → 封神觉醒者</div>
+    <div class="char-role">富豪 · 纯换贴图 · 武器换模型保留骨骼名</div>
+    <div class="char-desc">
+      <strong>影视热度：</strong>《姜子牙》2020票房16亿+《封神第一部》2023<br>
+      <strong>武器：</strong>打神鞭/杏黄旗。保留weaponRoot+gunRoot+bone52~71。gunRoot→鞭根<br>
+      <strong>蒙皮：</strong>网格保留，只换贴图（道袍+白须+杏黄旗装饰）<br>
+      <strong>面部：</strong>直接复用换脸贴图。老者面孔<br>
+      <strong>骨骼/动画改动：</strong><strong>0</strong> · <strong>工期：1周</strong>
+    </div>
+  </div>
+</div>
+
+<h3>🀄 西游人类化 — 换蒙皮+换武器（7.5周）</h3>
+
+<div class="char-card" style="border-left:4px solid var(--green)">
+  <div class="char-avatar" style="background:rgba(210,153,34,.2)">🐵</div>
+  <div class="char-info">
+    <div class="char-name">孙悟空 → 美猴王武将（人类化）</div>
+    <div class="char-role">侠客 · 换蒙皮+面部调 · 武器换模型</div>
+    <div class="char-desc">
+      <strong>人类化：</strong>人脸+金色瞳孔+面部金纹+额带。不做猴脸<br>
+      <strong>武器：</strong>金箍棒。保留swordRoot+scabbardRoot(空骨)<br>
+      <strong>骨骼改动：</strong>+1尾骨 · <strong>面部：</strong>需调BlendShape<br>
+      <strong>⚠️ 认知割裂风险：</strong>玩家期待毛猴子，结果是人脸帅哥<br>
+      <strong>工期：3周</strong>
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--green)">
+  <div class="char-avatar" style="background:rgba(91,44,111,.2)">🐗</div>
+  <div class="char-info">
+    <div class="char-name">猪八戒 → 天蓬元帅（人类化）</div>
+    <div class="char-role">佣兵 · 换蒙皮+面部调 · 武器换模型</div>
+    <div class="char-desc">
+      <strong>人类化：</strong>人脸+络腮胡+大耳装饰。不做猪脸<br>
+      <strong>武器：</strong>九齿钉耙。保留SwordRoot+Bone001~011<br>
+      <strong>⚠️ 认知割裂风险：</strong>玩家期待猪头，结果是壮汉<br>
+      <strong>工期：2周</strong>
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--green)">
+  <div class="char-avatar" style="background:rgba(210,153,34,.2)">🧑</div>
+  <div class="char-info">
+    <div class="char-name">唐僧 → 玄奘法师</div>
+    <div class="char-role">歌姬 · 纯换贴图 · ⚠️武器语义违和</div>
+    <div class="char-desc">
+      <strong>武器：</strong>锡杖。保留guitarRoot+weapon1/2。但"弹锡杖"动作有点违和<br>
+      <strong>⚠️ 歌姬问题：</strong>吉他17骨→锡杖，"弹吉他"动作变成"挥锡杖"，语义不对<br>
+      <strong>工期：1周</strong>
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--green)">
+  <div class="char-avatar" style="background:rgba(91,44,111,.2)">⚔️</div>
+  <div class="char-info">
+    <div class="char-name">沙僧 → 卷帘大将</div>
+    <div class="char-role">富豪 · 换贴图+面部微调 · 武器换模型</div>
+    <div class="char-desc">
+      <strong>武器：</strong>降妖宝杖。保留weaponRoot+gunRoot+bone52~71<br>
+      <strong>工期：1.5周</strong>
+    </div>
+  </div>
+</div>
+
+<h3>⚔️ 魔幻三国 — 武器不改纯换贴图（4周）</h3>
+
+<div class="char-card" style="border-left:4px solid var(--orange)">
+  <div class="char-avatar" style="background:rgba(219,109,40,.2)">🗡️</div>
+  <div class="char-info">
+    <div class="char-name">张辽 → 逍遥觉醒者</div>
+    <div class="char-role">侠客/魏 · 武器不改</div>
+    <div class="char-desc">
+      <strong>武器：</strong>双匕首+鞘。保留swordRoot+scabbardRoot+Bone100+Bone065。包装为"逍遥双刃"<br>
+      <strong>骨骼/动画改动：</strong><strong>0</strong>（47个动画全保留） · <strong>工期：1周</strong>
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--orange)">
+  <div class="char-avatar" style="background:rgba(63,185,80,.2)">⚔️</div>
+  <div class="char-info">
+    <div class="char-name">孙策 → 霸王觉醒者</div>
+    <div class="char-role">佣兵/吴 · 武器不改</div>
+    <div class="char-desc">
+      <strong>武器：</strong>大刀。保留SwordRoot+Bone001~011。包装为"霸王刀"<br>
+      <strong>骨骼/动画改动：</strong><strong>0</strong>（59个动画全保留） · <strong>工期：1周</strong>
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--orange)">
+  <div class="char-avatar" style="background:rgba(188,140,255,.2)">💃</div>
+  <div class="char-info">
+    <div class="char-name">貂蝉 → 倾国觉醒者</div>
+    <div class="char-role">歌姬/汉 · 吉他→换贴图成琵琶</div>
+    <div class="char-desc">
+      <strong>武器：</strong>吉他→琵琶外观。保留guitarRoot+weapon1/2。"弹琵琶"="弹吉他"完美兼容<br>
+      <strong>骨骼/动画改动：</strong><strong>0</strong>（60个动画全保留） · <strong>工期：1周</strong>
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--orange)">
+  <div class="char-avatar" style="background:rgba(219,109,40,.2)">🐉</div>
+  <div class="char-info">
+    <div class="char-name">赵云 → 龙胆觉醒者</div>
+    <div class="char-role">富豪/蜀 · 武器不改</div>
+    <div class="char-desc">
+      <strong>武器：</strong>剑+变形骨。保留weaponRoot+gunRoot+bone52~71。包装为"龙胆剑"<br>
+      <strong>骨骼/动画改动：</strong><strong>0</strong>（60个动画全保留） · <strong>工期：1周</strong>
+    </div>
+  </div>
+</div>
+
+<h3>三方案主角对比</h3>
+<table class="dim-table">
+<thead><tr><th>项目</th><th>🔮 封神</th><th>🀄 西游</th><th>⚔️ 三国</th></tr></thead>
+<tbody>
+<tr><td>人形？</td><td style="color:var(--green)">✅全人形</td><td style="color:var(--yellow)">⚠️需人类化</td><td style="color:var(--green)">✅全人形</td></tr>
+<tr><td>认知割裂？</td><td style="color:var(--green)">✅无</td><td style="color:var(--red)">❌有(人脸猴)</td><td style="color:var(--green)">✅无</td></tr>
+<tr><td>蒙皮网格</td><td style="color:var(--green)">保留</td><td style="color:var(--red)">悟空/八戒换</td><td style="color:var(--green)">保留</td></tr>
+<tr><td>面部系统</td><td style="color:var(--green)">直接复用</td><td style="color:var(--red)">悟空/八戒需调</td><td style="color:var(--green)">直接复用</td></tr>
+<tr><td>武器模型</td><td style="color:var(--yellow)">4个换(保留骨骼名)</td><td style="color:var(--red)">4个换(保留骨骼名)</td><td style="color:var(--green)">0个换(只换贴图)</td></tr>
+<tr><td>歌姬武器</td><td style="color:var(--green)">吉他→琵琶✅</td><td style="color:var(--red)">吉他→锡杖❌违和</td><td style="color:var(--green)">吉他→琵琶✅</td></tr>
+<tr><td>动画改动</td><td style="color:var(--green)">0</td><td style="color:var(--green)">0</td><td style="color:var(--green)">0</td></tr>
+<tr><td>4主角工期</td><td style="color:var(--green)">4周</td><td style="color:var(--red)">7.5周</td><td style="color:var(--green)">4周</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ========== Tab 4: 武器系统 ========== -->
+<div id="tab-weapon" class="tab-content">
+<h2>武器系统 — 骨骼与动画影响</h2>
+
+<div class="note">
+  <strong>实测数据：</strong>武器骨骼几乎写进每个动画。侠客100%、佣兵98%、歌姬82%、富豪100%。<br>
+  <strong>解法：</strong>保留原骨骼名即可0动画改动。三国更进一步——武器模型都不换。
+</div>
+
+<h3>原武器骨骼结构</h3>
+<table class="mapping-table">
+<thead><tr><th>角色</th><th>原武器</th><th>武器骨骼</th><th style="text-align:right">骨骼数</th><th>动画引用率</th></tr></thead>
+<tbody>
+<tr><td class="orig">侠客(FH01)</td><td>双匕首+鞘</td><td>swordRoot, scabbardRoot, Bone100, Bone065, skillRoot002</td><td style="text-align:right">5</td><td><strong>100%</strong></td></tr>
+<tr><td class="orig">佣兵(YB01)</td><td>大刀</td><td>SwordRoot, weaponRoot1, Bone001~011, reRoot</td><td style="text-align:right">14</td><td><strong>98%</strong></td></tr>
+<tr><td class="orig">歌姬(GJ01)</td><td>吉他</td><td>guitarRoot, weapon1_01~04, weapon2_1~23, swordRoot, Bone081~083</td><td style="text-align:right">17</td><td><strong>82%</strong></td></tr>
+<tr><td class="orig">富豪(DZ01)</td><td>剑(变形骨)</td><td>weaponRoot, gunRoot, weapon, bone52~71, reRoot, footRoot</td><td style="text-align:right">9</td><td><strong>100%</strong></td></tr>
+</tbody>
+</table>
+
+<h3>三方案武器处理对比</h3>
+<table class="mapping-table">
+<thead><tr><th>角色</th><th>原武器</th><th>🔮 封神</th><th>🀄 西游</th><th>⚔️ 三国</th></tr></thead>
+<tbody>
+<tr><td class="orig">侠客</td><td>双匕首+鞘(5骨)</td><td class="repl">哪吒：火尖枪<br>保留骨骼名<br>换模型</td><td class="repl">悟空：金箍棒<br>保留骨骼名(鞘空骨)<br>换模型</td><td class="repl"><strong>张辽：不改</strong><br>包装"逍遥双刃"</td></tr>
+<tr><td class="orig">佣兵</td><td>大刀(14骨)</td><td class="repl">杨戬：三尖刀<br>保留骨骼名<br>换模型</td><td class="repl">八戒：钉耙<br>保留骨骼名<br>换模型</td><td class="repl"><strong>孙策：不改</strong><br>包装"霸王刀"</td></tr>
+<tr><td class="orig">歌姬</td><td>吉他(17骨)</td><td class="repl">妲己：琵琶<br>guitarRoot全保留<br>✅ 换武器贴图</td><td class="repl">唐僧：锡杖<br>guitarRoot全保留<br>❌ "弹锡杖"违和</td><td class="repl"><strong>貂蝉：琵琶</strong><br>guitarRoot全保留<br>✅ 换武器贴图</td></tr>
+<tr><td class="orig">富豪</td><td>剑(9骨)</td><td class="repl">姜子牙：打神鞭<br>保留骨骼名<br>换模型</td><td class="repl">沙僧：降妖杖<br>保留骨骼名<br>换模型</td><td class="repl"><strong>赵云：不改</strong><br>包装"龙胆剑"</td></tr>
+</tbody>
+</table>
+
+<h3>歌姬武器关键分析</h3>
+<table class="dim-table">
+<thead><tr><th>方案</th><th>歌姬武器</th><th>17骨处理</th><th>语义兼容</th></tr></thead>
+<tbody>
+<tr><td>🔮 封神</td><td>吉他→琵琶(换贴图)</td><td style="color:var(--green)">全保留</td><td style="color:var(--green)">✅ 弹琵琶=弹吉他</td></tr>
+<tr><td>🀄 西游</td><td>吉他→锡杖(换模型)</td><td style="color:var(--green)">全保留(空骨)</td><td style="color:var(--red)">❌ 弹锡杖违和</td></tr>
+<tr><td>⚔️ 三国</td><td>吉他→琵琶(换贴图)</td><td style="color:var(--green)">全保留</td><td style="color:var(--green)">✅ 弹琵琶=弹吉他</td></tr>
+</tbody>
+</table>
+
+<div class="note">
+  <strong>歌姬结论：</strong>封神和三国都是"吉他→琵琶"，天然完美兼容。西游的"吉他→锡杖"有语义违和。封神妲己弹琵琶+三国貂蝉弹琵琶，都是乐器→乐器，0违和。
+</div>
+</div>
+
+<!-- ========== Tab 5: 逐章映射 ========== -->
+<div id="tab-chapter" class="tab-content">
+<h2>逐章剧情映射 — 三方案并排</h2>
+
+<table class="mapping-table">
+<thead><tr><th style="width:130px">原剧情</th><th>🔮 封神演义</th><th>🀄 西游人类化</th><th>⚔️ 魔幻三国</th></tr></thead>
+<tbody>
+
+<tr><td class="orig"><strong>开篇：环之墟</strong></td>
+<td class="repl">女娲降下封神令。鸿钧老祖告知：此前多次封神全部失败。小女孩=苍生祈愿。</td>
+<td class="repl">观音奉佛旨寻找取经人。佛祖告知：此前多次取经人全部失败。</td>
+<td class="repl">南华老仙铸造觉醒石。告知左慈：此前多次投放觉醒石全部失败。</td></tr>
+
+<tr><td class="orig"><strong>序章：环的试炼</strong></td>
+<td class="repl">哪吒在莲花化身中觉醒。太乙真人赐火尖枪+乾坤圈=原质注入。</td>
+<td class="repl">悟空被五行山封印五百年后解封。观音赐紧箍=原质注入。</td>
+<td class="repl">张辽在古战场遗迹中发现觉醒石。觉醒石注入龙魂之力=原质。</td></tr>
+
+<tr><td class="orig"><strong>第一章：汇合的四人</strong></td>
+<td class="repl">哪吒陆续遇杨戬(灌江口)/妲己(朝歌)/姜子牙(渭水)。遇土行孙(丹蒂)指引。第一战：破十绝阵。</td>
+<td class="repl">悟空陆续收八戒/沙僧，唐僧为取经核心。遇土地公(丹蒂)指引。第一难：黑熊精。</td>
+<td class="repl">张辽陆续遇孙策(吴)/貂蝉(汉)/赵云(蜀)。遇鲁肃(丹蒂)指引。第一战：黄巾妖兵。</td></tr>
+
+<tr><td class="orig"><strong>第二章：愤怒的巨龙</strong></td>
+<td class="repl">妲己出现，妖气弥漫朝歌。封神榜被触发，元始天尊注意。闻太师(奥丁)介入。</td>
+<td class="repl">观音现身指引真经方向。妲己(石板)触发，元始天尊苏醒。</td>
+<td class="repl">貂蝉觉醒倾国之力。传国玉玺(石板)触发天命。左慈感知新觉醒者。曹操被黑暗侵蚀。</td></tr>
+
+<tr><td class="orig"><strong>第三章：重逢与分别</strong></td>
+<td class="repl">元始天尊vs通天教主。万仙阵(耶梦加得)爆发，妲己被封印。截教门人阻路。</td>
+<td class="repl">元始天尊vs通天教主。万仙阵爆发，妲己被封印。</td>
+<td class="repl">左慈vs曹操(魔魂)。妖兽化吕布(耶梦加得)吞噬貂蝉。李傕郭汜阻路。</td></tr>
+
+<tr><td class="orig"><strong>第四章：钢铁的要塞</strong></td>
+<td class="repl">潜入朝歌王宫/截教巢穴，窃听申公豹(诗嘉古尔)阴谋。二郎神(卡拉丁)率天兵救援。</td>
+<td class="repl">潜入朝歌/截教巢穴，窃听申公豹阴谋。二郎神救援。</td>
+<td class="repl">潜入许昌魏国要塞，窃听南华老仙(诗嘉古尔)阴谋。周瑜(卡拉丁)率水军救援。</td></tr>
+
+<tr><td class="orig"><strong>第五章：海底迷踪</strong></td>
+<td class="repl">潜入东海/碧游宫。通天教主(耶梦加得)苏醒。四人被万仙阵吞入。</td>
+<td class="repl">潜入东海龙宫。碧游宫中通天教主苏醒。四人被万仙阵吞入。</td>
+<td class="repl">潜入赤壁水寨暗道。妖兽化吕布苏醒。四人被困火海。</td></tr>
+
+<tr><td class="orig"><strong>第六章：蛇腹之旅</strong></td>
+<td class="repl">万仙阵幻境。揭示：截教门人被阐教屠杀/妖族求生内斗/商朝百姓灾难/弟子被炼为法宝。申公豹夺走妲己。</td>
+<td class="repl">万仙阵幻境。揭示截教悲剧。申公豹夺走妲己。</td>
+<td class="repl">八阵图幻境。揭示：魏将思乡/黄巾绝望/董卓部下悲剧/百姓流离。南华老仙夺走貂蝉。</td></tr>
+
+<tr><td class="orig"><strong>第七章：猩红之地</strong></td>
+<td class="repl">坠入万妖谷。袁洪(技巧之场)登场，称哪吒为"多次轮回仍不知悔改的杀神"。哪吒觉得对方熟悉。</td>
+<td class="repl">坠入狮驼岭。大鹏金翅雕登场，称悟空为"轮回不知悔改的妖猴"。</td>
+<td class="repl">坠入南蛮之地。兀突骨(技巧之场)登场，称张辽为"轮回不知悔改的伪善者"。</td></tr>
+
+</tbody>
+</table>
+</div>
+
+<!-- ========== Tab 6: 综合评分 ========== -->
+<div id="tab-score" class="tab-content">
+<h2>综合评分与推荐</h2>
+
+<table class="dim-table">
+<thead><tr><th>维度</th><th>权重</th><th>🔮 封神</th><th>🀄 西游</th><th>⚔️ 三国</th><th>胜者</th></tr></thead>
+<tbody>
+<tr><td>剧情匹配度</td><td>15%</td><td style="color:var(--green)">88</td><td style="color:var(--green)">90</td><td style="color:var(--green)">85</td><td>西游</td></tr>
+<tr><td>角色丰富度</td><td>10%</td><td style="color:var(--green)">85</td><td style="color:var(--green)">85</td><td style="color:var(--green)">95</td><td>三国</td></tr>
+<tr><td>超自然元素</td><td>10%</td><td style="color:var(--green)">100</td><td style="color:var(--green)">100</td><td style="color:var(--green)">80</td><td>封神/西游</td></tr>
+<tr><td>试炼/关卡感</td><td>10%</td><td style="color:var(--green)">85</td><td style="color:var(--green)">95</td><td style="color:var(--green)">85</td><td>西游</td></tr>
+<tr><td>四职业适配</td><td>5%</td><td style="color:var(--green)">95</td><td style="color:var(--yellow)">85</td><td style="color:var(--green)">95</td><td>封神/三国</td></tr>
+<tr><td>国内认知度</td><td>5%</td><td style="color:var(--green)">90</td><td style="color:var(--green)">95</td><td style="color:var(--green)">98</td><td>三国</td></tr>
+<tr><td>美术复用率</td><td>15%</td><td style="color:var(--green)">82</td><td style="color:var(--green)">80</td><td style="color:var(--green)">85</td><td>三国</td></tr>
+<tr><td>特效适配</td><td>10%</td><td style="color:var(--green)">85</td><td style="color:var(--green)">85</td><td style="color:var(--green)">80</td><td>封神/西游</td></tr>
+<tr><td>卡牌适配</td><td>10%</td><td style="color:var(--green)">85</td><td style="color:var(--green)">85</td><td style="color:var(--green)">95</td><td>三国</td></tr>
+<tr><td>版权安全性</td><td>10%</td><td style="color:var(--green)">100</td><td style="color:var(--green)">100</td><td style="color:var(--green)">100</td><td>平手</td></tr>
+</tbody>
+<tfoot><tr><td><strong>加权总分</strong></td><td>100%</td><td style="color:var(--green)"><strong>89</strong></td><td style="color:var(--green)"><strong>89</strong></td><td style="color:var(--green)"><strong>88</strong></td><td>封神/西游并列</td></tr></tfoot>
+</table>
+
+<div class="summary-grid">
+  <div class="summary-card" style="border-left:4px solid var(--purple)">
+    <h4>🔮 封神演义</h4>
+    <div style="text-align:center;font-size:48px;font-weight:800;color:var(--purple)">A</div>
+    <ul class="detail-list" style="margin-top:8px">
+      <li class="check">✅ 全人形：不割裂，纯换贴图</li>
+      <li class="check">✅ 超自然最强：仙术/法宝100分</li>
+      <li class="check">✅ 歌姬完美：妲己弹琵琶=弹吉他</li>
+      <li class="check">✅ 4周工期最短(并列)</li>
+      <li class="check">✅ 影视热度高：2023封神+独立电影</li>
+      <li class="warn">⚠️ 认知度略低于西游三国</li>
+      <li class="check">✅ 总工期：3-4个月</li>
+    </ul>
+  </div>
+  <div class="summary-card" style="border-left:4px solid var(--green)">
+    <h4>🀄 西游人类化</h4>
+    <div style="text-align:center;font-size:48px;font-weight:800;color:var(--green)">A-</div>
+    <ul class="detail-list" style="margin-top:8px">
+      <li class="check">✅ 试炼感最强：八十一难</li>
+      <li class="check">✅ 超自然最强：妖怪100分</li>
+      <li class="check">✅ 场景复用最高：冰原→雪山</li>
+      <li class="cross">❌ 认知割裂：人脸猴子</li>
+      <li class="cross">❌ 换蒙皮：悟空/八戒需重做</li>
+      <li class="cross">❌ 歌姬吉他→锡杖违和</li>
+      <li class="cross">❌ 工期最长：7.5周</li>
+    </ul>
+  </div>
+  <div class="summary-card" style="border-left:4px solid var(--orange)">
+    <h4>⚔️ 魔幻三国</h4>
+    <div style="text-align:center;font-size:48px;font-weight:800;color:var(--orange)">A</div>
+    <ul class="detail-list" style="margin-top:8px">
+      <li class="check">✅ 武器不改：0动画0骨骼改动</li>
+      <li class="check">✅ 4周工期最短(并列)</li>
+      <li class="check">✅ 认知度最高98分</li>
+      <li class="check">✅ 角色最多：数百武将</li>
+      <li class="check">✅ 歌姬完美：貂蝉弹琵琶</li>
+      <li class="warn">⚠️ 场景需改：冰雪→战场</li>
+      <li class="warn">⚠️ 需构建觉醒系统</li>
+      <li class="check">✅ 总工期：3-5个月</li>
+    </ul>
+  </div>
+</div>
+
+<div class="note">
+  <strong>最终结论：</strong>三方案仅差1分（89/89/88），完全并驾齐驱。<br><br>
+  <strong>封神演义（89分）</strong>— 全人形不割裂+仙术超自然+影视热度+4周工期。最均衡的方案。<br>
+  <strong>西游人类化（89分）</strong>— 试炼感最强+场景复用最高。但认知割裂+工期最长+歌姬违和。<br>
+  <strong>魔幻三国（88分）</strong>— 武器不改最省+认知度最高+角色最多。但场景需改+需建觉醒系统。<br><br>
+  <strong>推荐：封神演义</strong>——无短板方案。全人形不割裂(vs西游)、超自然原生100分(vs三国80)、影视热度高(2023封神电影)、工期短(4周)、歌姬琵琶完美兼容。
+</div>
+</div>
+
+<!-- ========== Tab 7: 数据来源 ========== -->
+<div id="tab-sources" class="tab-content">
+<h2>数据来源</h2>
+
+<h3>📋 原始设计文档</h3>
+<div class="source-list">
+<p><strong>总梗概：</strong> <code>D:\MA2020\Design\剧情共享文档\2梗概+脚本\5梗概\2023调整后梗概（最初版）序~7章.docx</code></p>
+<p><strong>各章大纲：</strong> <code>D:\MA2020\Design\剧情共享文档\2梗概+脚本\5梗概\23456章剧情梗概（会议讨论基本确定版）\</code></p>
+<p><strong>主线校对版台词：</strong> <code>D:\MA2020\Design\剧情共享文档\2梗概+脚本\1主线\主线校对版\</code></p>
+<p><strong>支线剧情：</strong> <code>D:\MA2020\Design\剧情共享文档\2梗概+脚本\2支线\</code></p>
+</div>
+
+<h3>📋 游戏内数据</h3>
+<div class="source-list">
+<p><strong>剧情文本：</strong> <code>Assets\App\Data\lang\hans\hans_explorestory.json</code>（63,124行）</p>
+<p><strong>剧情结构：</strong> <code>Assets\App\Lua\Data\Plot.lua.bytes</code>（15,702行）</p>
+<p><strong>皮肤配置：</strong> <code>Assets\App\Lua\Data\Skin.lua.bytes</code>（weaponPrefab/bodyPrefab映射）</p>
+<p><strong>模型配置：</strong> <code>Assets\App\Lua\Data\AssetsModel.lua.bytes</code>（武器预制体路径映射）</p>
+<p><strong>过场动画：</strong> <code>Assets\DialogPrefabs\</code>（597个）</p>
+</div>
+
+<h3>📋 武器骨骼实测数据</h3>
+<div class="source-list">
+<p><strong>侠客(FH01)：</strong> swordRoot(47/47), scabbardRoot(44/47), Bone100(47/47), Bone065(44/47)</p>
+<p><strong>佣兵(YB01)：</strong> SwordRoot(55/59), weaponRoot1(58/59), Bone001~011(58/59), reRoot(58/59)</p>
+<p><strong>歌姬(GJ01)：</strong> guitarRoot(49/60), weapon1_01~04(48/60), weapon2_1~23(48/60), swordRoot(49/60)</p>
+<p><strong>富豪(DZ01)：</strong> weaponRoot(60/60), gunRoot(59/60), weapon(60/60), bone52~71(50~58/60)</p>
+</div>
+
+<h3>📋 美术资源统计</h3>
+<div class="source-list">
+<p>Player: 36 FBX / 993 anim / 278 tga | Monster: 112 FBX / 1,339 anim | Npc: 74 FBX | Boss: 36 FBX</p>
+<p>Plot动画: 5,365 anim / 103角色 | UI图片: 9,724 PNG / 112图集 | Spine: 47组</p>
+<p>场景: 2,105 FBX / 2,025 tga | 特效: 807 FBX / 1,647 PNG | 过场: 597 | 音频: 1,342</p>
+</div>
+
+<h3>📋 公有领域IP</h3>
+<div class="source-list">
+<p>├─ 封神演义 — 许仲琳·明代·公有领域</p>
+<p>├─ 西游记 — 吴承恩(约1500-1582)·明代·公有领域</p>
+<p>└─ 三国演义 — 罗贯中(约1330-1400)·元末明初·公有领域</p>
+</div>
+
+<h3>📋 封神影视参考</h3>
+<div class="source-list">
+<p>├─ 《封神第一部：朝歌风云》2023 — 乌尔善导演。哪吒/杨戬/姜子牙/妲己全员登场</p>
+<p>├─ 《哪吒之魔童降世》2019 — 票房50亿+。哪吒独立电影</p>
+<p>├─ 《姜子牙》2020 — 票房16亿。姜子牙独立电影</p>
+<p>└─ 《新神榜：杨戬》2022 — 杨戬独立动画电影</p>
+</div>
+</div>
+
+<script>
+function switchTab(t){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));event.target.classList.add('active');document.getElementById('tab-'+t).classList.add('active')}
+</script>
+</body>
+</html>
