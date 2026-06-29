@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美术资源管理 v2 — 二选一换蒙皮评估</title>
+<style>
+:root{--bg:#0d1117;--bg-card:#161b22;--bg-hover:#1c2128;--border:#30363d;--text:#e6edf3;--text-dim:#8b949e;--accent:#58a6ff;--accent-dim:#1f6feb;--green:#3fb950;--yellow:#d29922;--red:#f85149;--purple:#bc8cff;--orange:#db6d28}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif;line-height:1.6;padding:20px}
+h1{font-size:28px;margin-bottom:8px}
+h2{font-size:22px;margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px}
+h3{font-size:17px;margin:16px 0 8px;color:var(--accent)}
+h4{font-size:15px;margin:12px 0 6px}
+.subtitle{color:var(--text-dim);margin-bottom:24px;font-size:14px}
+.tab-bar{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--border);flex-wrap:wrap}
+.tab{padding:10px 20px;cursor:pointer;border:none;background:none;color:var(--text-dim);font-size:14px;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{display:none}.tab-content.active{display:block}
+.note{background:rgba(56,139,253,.1);border:1px solid var(--accent-dim);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:13px}
+.note strong{color:var(--accent)}
+.asset-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.asset-table th{background:var(--bg-card);color:var(--accent);padding:10px;text-align:left;border-bottom:2px solid var(--border);font-weight:600;position:sticky;top:0;white-space:nowrap}
+.asset-table td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top}
+.asset-table tr:hover td{background:var(--bg-hover)}
+.asset-table .cat{color:var(--purple);font-weight:600}
+.asset-table .count{text-align:right;color:var(--text-dim);white-space:nowrap}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.tag-reuse{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3)}
+.tag-partial{background:rgba(210,153,34,.15);color:var(--yellow);border:1px solid rgba(210,153,34,.3)}
+.tag-replace{background:rgba(248,81,73,.15);color:var(--red);border:1px solid rgba(248,81,73,.3)}
+.ip-compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.ip-col{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px}
+.ip-col h4{font-size:16px;color:var(--accent);margin-bottom:8px}
+.stat-box{text-align:center;padding:12px;margin:8px 0;border-radius:8px}
+.stat-box.reuse{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3)}
+.stat-box.partial{background:rgba(210,153,34,.1);border:1px solid rgba(210,153,34,.3)}
+.stat-box.replace{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3)}
+.stat-box .stat-num{font-size:32px;font-weight:800;line-height:1}
+.stat-box .stat-label{font-size:12px;color:var(--text-dim);margin-top:4px}
+.bar-chart{margin:16px 0}
+.bar-row{display:flex;align-items:center;margin:8px 0;gap:8px}
+.bar-label{width:200px;font-size:13px;text-align:right;flex-shrink:0}
+.bar-container{flex:1;height:24px;background:var(--bg-card);border-radius:4px;overflow:hidden;position:relative;display:flex}
+.bar-reuse{height:100%;background:var(--green)}
+.bar-partial{height:100%;background:var(--yellow)}
+.bar-replace{height:100%;background:var(--red)}
+.bar-value{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:600;color:var(--text)}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.summary-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px}
+.summary-card h4{color:var(--accent);margin-bottom:8px}
+.detail-list{font-size:13px}
+.detail-list li{margin:4px 0 4px 20px;list-style-type:none}
+.detail-list .check{color:var(--green)}
+.detail-list .warn{color:var(--yellow)}
+.detail-list .cross{color:var(--red)}
+.legend{display:flex;gap:16px;margin:12px 0;font-size:13px}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:12px;height:12px;border-radius:3px}
+.tech-box{background:var(--bg-card);border:1px solid var(--border);border-left:4px solid var(--green);border-radius:8px;padding:16px;margin:12px 0}
+.tech-box h4{color:var(--green)}
+.dim-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.dim-table th{background:var(--bg-card);color:var(--accent);padding:8px;border-bottom:2px solid var(--border)}
+.dim-table td{padding:8px;border-bottom:1px solid var(--border);text-align:center}
+.dim-table td:first-child{text-align:left;color:var(--purple);font-weight:600}
+.dim-table tr:hover td{background:var(--bg-hover)}
+.char-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;margin:8px 0;display:flex;gap:16px;align-items:flex-start}
+.char-avatar{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.char-info{flex:1}
+.char-info .char-name{font-size:16px;font-weight:700;color:var(--accent)}
+.char-info .char-role{font-size:12px;color:var(--text-dim);margin-bottom:4px}
+.char-info .char-desc{font-size:13px;color:var(--text-dim)}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-dim)}
+</style>
+</head>
+<body>
+
+<h1>🎨 美术资源管理 v2 — 二选一换蒙皮评估</h1>
+<p class="subtitle">封神西游 vs 魔幻三国 · 换蒙皮技术评估 · 美术资源复用分析</p>
+
+<div class="tab-bar">
+  <button class="tab active" onclick="switchTab('inventory')">📦 现有资源盘点</button>
+  <button class="tab" onclick="switchTab('overview')">📊 二方案总览</button>
+  <button class="tab" onclick="switchTab('skin')">🔧 换蒙皮技术</button>
+  <button class="tab" onclick="switchTab('detail1')">🀄封神西游 详细</button>
+  <button class="tab" onclick="switchTab('detail2')">⚔️魔幻三国 详细</button>
+  <button class="tab" onclick="switchTab('comparison')">🔍 逐类对比</button>
+</div>
+
+<!-- ========== Tab 1: 现有资源盘点 ========== -->
+<div id="tab-inventory" class="tab-content active">
+<h2>现有美术资源盘点</h2>
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span> 可复用</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span> 部分复用/需改</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span> 需重置</div>
+</div>
+
+<h3>3D角色模型</h3>
+<table class="asset-table">
+<thead><tr><th>分类</th><th>路径</th><th class="count">FBX</th><th class="count">动画</th><th class="count">材质</th><th class="count">贴图</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td class="cat">Player</td><td>Characters\Player</td><td class="count">36</td><td class="count">993</td><td class="count">116</td><td class="count">278</td><td>4主角模型</td></tr>
+<tr><td class="cat">Monster</td><td>Characters\Monster</td><td class="count">112</td><td class="count">1,339</td><td class="count">230</td><td class="count">488</td><td>怪物模型</td></tr>
+<tr><td class="cat">Npc</td><td>Characters\Npc</td><td class="count">74</td><td class="count">202</td><td class="count">184</td><td class="count">430</td><td>NPC(含表情)</td></tr>
+<tr><td class="cat">Boss</td><td>Characters\Boss</td><td class="count">36</td><td class="count">506</td><td class="count">92</td><td class="count">206</td><td>Boss模型</td></tr>
+<tr><td class="cat">Qban</td><td>Characters\Qban</td><td class="count">27</td><td class="count">81</td><td class="count">65</td><td class="count">65</td><td>Q版角色</td></tr>
+<tr><td class="cat">Plot</td><td>Characters\Plot</td><td class="count">—</td><td class="count">5,365</td><td class="count">—</td><td class="count">—</td><td>剧情动画(103角色)</td></tr>
+</tbody>
+</table>
+
+<h3>2D UI资源</h3>
+<table class="asset-table">
+<thead><tr><th>分类</th><th>路径</th><th class="count">数量</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td class="cat">卡牌立绘</td><td>UI\Texture\ImgCard</td><td class="count">1,052</td><td>核心资产</td></tr>
+<tr><td class="cat">图标素材</td><td>UI\Texture\ImgIcon</td><td class="count">964</td><td>技能/道具图标</td></tr>
+<tr><td class="cat">Sprite图集</td><td>UI\Sprite</td><td class="count">112</td><td>系统图集</td></tr>
+<tr><td class="cat">Spine动画</td><td>UI\Spine</td><td class="count">47组</td><td>UI角色动画</td></tr>
+<tr><td class="cat">背景图</td><td>UI\Texture\ImgBack</td><td class="count">125</td><td>系统背景</td></tr>
+<tr><td class="cat">剧情图</td><td>UI\Texture\ImgPlot</td><td class="count">118</td><td>剧情插图</td></tr>
+</tbody>
+</table>
+
+<h3>场景/特效/过场/音频</h3>
+<table class="asset-table">
+<thead><tr><th>分类</th><th>路径</th><th class="count">数量</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td class="cat">场景环境</td><td>Environment</td><td class="count">2,105 FBX</td><td>场景建筑/地形/道具</td></tr>
+<tr><td class="cat">特效</td><td>Effect</td><td class="count">807 FBX + 1,647 PNG</td><td>战斗/UI特效</td></tr>
+<tr><td class="cat">过场动画</td><td>DialogPrefabs</td><td class="count">597</td><td>剧情演出预制体</td></tr>
+<tr><td class="cat">音频</td><td>StreamingAssets\Criware</td><td class="count">1,342</td><td>BGM/SFX/语音</td></tr>
+<tr><td class="cat">字体</td><td>UI\Font</td><td class="count">56+108</td><td>TTF/数字字体</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ========== Tab 2: 二方案总览 ========== -->
+<div id="tab-overview" class="tab-content">
+<h2>二方案美术复用总览</h2>
+
+<div class="ip-compare-grid">
+  <div class="ip-col" style="border-left:4px solid var(--green)">
+    <h4>🀄 封神西游</h4>
+    <div class="stat-box reuse"><div class="stat-num" style="color:var(--green)">55%</div><div class="stat-label">可复用</div></div>
+    <div class="stat-box partial"><div class="stat-num" style="color:var(--yellow)">25%</div><div class="stat-label">部分复用/需改</div></div>
+    <div class="stat-box replace"><div class="stat-num" style="color:var(--red)">20%</div><div class="stat-label">需重置</div></div>
+    <p style="font-size:13px;color:var(--text-dim)">奇幻风格最接近原作。场景大量复用，仙术特效天然适配。4主角人类化换蒙皮。</p>
+  </div>
+  <div class="ip-col" style="border-left:4px solid var(--orange)">
+    <h4>⚔️ 魔幻三国</h4>
+    <div class="stat-box reuse"><div class="stat-num" style="color:var(--green)">50%</div><div class="stat-label">可复用</div></div>
+    <div class="stat-box partial"><div class="stat-num" style="color:var(--yellow)">25%</div><div class="stat-label">部分复用/需改</div></div>
+    <div class="stat-box replace"><div class="stat-num" style="color:var(--red)">25%</div><div class="stat-label">需重置</div></div>
+    <p style="font-size:13px;color:var(--text-dim)">觉醒系统让特效可复用。4主角纯人形换贴图最省。场景需改中原战场。</p>
+  </div>
+</div>
+
+<h3>复用率柱状图</h3>
+
+<h4 style="color:var(--green)">🀄 封神西游</h4>
+<div class="bar-chart">
+  <div class="bar-row"><span class="bar-label">UI框架/图集(112)</span><div class="bar-container"><div class="bar-reuse" style="width:90%"></div><div class="bar-partial" style="width:5%"></div><div class="bar-replace" style="width:5%"></div><span class="bar-value">90%复用</span></div></div>
+  <div class="bar-row"><span class="bar-label">4主角3D模型(36)</span><div class="bar-container"><div class="bar-reuse" style="width:75%"></div><div class="bar-partial" style="width:20%"></div><div class="bar-replace" style="width:5%"></div><span class="bar-value">骨架全留</span></div></div>
+  <div class="bar-row"><span class="bar-label">卡牌立绘(1052)</span><div class="bar-container"><div class="bar-reuse" style="width:20%"></div><div class="bar-partial" style="width:30%"></div><div class="bar-replace" style="width:50%"></div><span class="bar-value">需重画50%</span></div></div>
+  <div class="bar-row"><span class="bar-label">场景环境(2105)</span><div class="bar-container"><div class="bar-reuse" style="width:60%"></div><div class="bar-partial" style="width:25%"></div><div class="bar-replace" style="width:15%"></div><span class="bar-value">60%复用</span></div></div>
+  <div class="bar-row"><span class="bar-label">特效(807+1647)</span><div class="bar-container"><div class="bar-reuse" style="width:70%"></div><div class="bar-partial" style="width:20%"></div><div class="bar-replace" style="width:10%"></div><span class="bar-value">70%复用</span></div></div>
+  <div class="bar-row"><span class="bar-label">Spine(47组)</span><div class="bar-container"><div class="bar-reuse" style="width:70%"></div><div class="bar-partial" style="width:20%"></div><div class="bar-replace" style="width:10%"></div><span class="bar-value">骨架留</span></div></div>
+  <div class="bar-row"><span class="bar-label">过场动画(597)</span><div class="bar-container"><div class="bar-reuse" style="width:70%"></div><div class="bar-partial" style="width:20%"></div><div class="bar-replace" style="width:10%"></div><span class="bar-value">结构留</span></div></div>
+  <div class="bar-row"><span class="bar-label">音频(1342)</span><div class="bar-container"><div class="bar-reuse" style="width:50%"></div><div class="bar-partial" style="width:30%"></div><div class="bar-replace" style="width:20%"></div><span class="bar-value">BGM留</span></div></div>
+</div>
+
+<h4 style="color:var(--orange)">⚔️ 魔幻三国</h4>
+<div class="bar-chart">
+  <div class="bar-row"><span class="bar-label">UI框架/图集(112)</span><div class="bar-container"><div class="bar-reuse" style="width:85%"></div><div class="bar-partial" style="width:10%"></div><div class="bar-replace" style="width:5%"></div><span class="bar-value">85%复用</span></div></div>
+  <div class="bar-row"><span class="bar-label">4主角3D模型(36)</span><div class="bar-container"><div class="bar-reuse" style="width:95%"></div><div class="bar-partial" style="width:5%"></div><div class="bar-replace" style="width:0%"></div><span class="bar-value">只换贴图</span></div></div>
+  <div class="bar-row"><span class="bar-label">卡牌立绘(1052)</span><div class="bar-container"><div class="bar-reuse" style="width:10%"></div><div class="bar-partial" style="width:5%"></div><div class="bar-replace" style="width:85%"></div><span class="bar-value">需重画85%</span></div></div>
+  <div class="bar-row"><span class="bar-label">场景环境(2105)</span><div class="bar-container"><div class="bar-reuse" style="width:30%"></div><div class="bar-partial" style="width:25%"></div><div class="bar-replace" style="width:45%"></div><span class="bar-value">需改战场</span></div></div>
+  <div class="bar-row"><span class="bar-label">特效(807+1647)</span><div class="bar-container"><div class="bar-reuse" style="width:80%"></div><div class="bar-partial" style="width:15%"></div><div class="bar-replace" style="width:5%"></div><span class="bar-value">觉醒=魔法</span></div></div>
+  <div class="bar-row"><span class="bar-label">Spine(47组)</span><div class="bar-container"><div class="bar-reuse" style="width:85%"></div><div class="bar-partial" style="width:10%"></div><div class="bar-replace" style="width:5%"></div><span class="bar-value">换贴图</span></div></div>
+  <div class="bar-row"><span class="bar-label">过场动画(597)</span><div class="bar-container"><div class="bar-reuse" style="width:55%"></div><div class="bar-partial" style="width:25%"></div><div class="bar-replace" style="width:20%"></div><span class="bar-value">结构留</span></div></div>
+  <div class="bar-row"><span class="bar-label">音频(1342)</span><div class="bar-container"><div class="bar-reuse" style="width:45%"></div><div class="bar-partial" style="width:25%"></div><div class="bar-replace" style="width:30%"></div><span class="bar-value">部分留</span></div></div>
+</div>
+</div>
+
+<!-- ========== Tab 3: 换蒙皮技术 ========== -->
+<div id="tab-skin" class="tab-content">
+<h2>换蒙皮技术评估</h2>
+<p style="font-size:13px;color:var(--text-dim)">保留骨架+动画，只换蒙皮网格+贴图。以下为两方案的逐角色工作量。</p>
+
+<h3>保留不动的（0工作量）</h3>
+<div class="tech-box">
+<table class="asset-table">
+<thead><tr><th>资产</th><th class="count">数量</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td class="cat">骨架(Skeleton)</td><td class="count">全部</td><td>Humanoid Rig完全不动</td></tr>
+<tr><td class="cat">动画(Animation)</td><td class="count">5,365+993</td><td>剧情+主角动画全部复用</td></tr>
+<tr><td class="cat">动画控制器</td><td class="count">328</td><td>状态机完全复用</td></tr>
+<tr><td class="cat">Avatar</td><td class="count">全部</td><td>Humanoid配置不动</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>🀄 封神西游 — 4主角换蒙皮</h3>
+
+<div class="char-card" style="border-left:4px solid var(--accent)">
+  <div class="char-avatar" style="background:rgba(210,153,34,.2)">🐵</div>
+  <div class="char-info">
+    <div class="char-name">孙悟空 → 美猴王武将</div>
+    <div class="char-role">侠客 · 换蒙皮+面部调</div>
+    <div class="char-desc">
+      <strong>保留：</strong>骨架+5000动画+Avatar<br>
+      <strong>换：</strong>蒙皮网格(人形+猴特征装饰) + 贴图(金甲+金色瞳孔+面部纹饰) + 武器(金箍棒)<br>
+      <strong>骨骼改动：</strong>+1尾骨<br>
+      <strong>面部：</strong>人脸基础保留，加金色瞳孔/纹饰贴图<br>
+      <strong>工作量：</strong>★★★☆☆ 3周
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--accent)">
+  <div class="char-avatar" style="background:rgba(91,44,111,.2)">🐗</div>
+  <div class="char-info">
+    <div class="char-name">猪八戒 → 天蓬元帅</div>
+    <div class="char-role">佣兵 · 换蒙皮+面部调</div>
+    <div class="char-desc">
+      <strong>保留：</strong>骨架+动画+Avatar<br>
+      <strong>换：</strong>蒙皮网格(壮硕体型微调) + 贴图(银甲+络腮胡+大耳装饰) + 武器(九齿钉耙)<br>
+      <strong>骨骼改动：</strong>不改<br>
+      <strong>面部：</strong>人脸+络腮胡贴图<br>
+      <strong>工作量：</strong>★★☆☆☆ 2周
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--accent)">
+  <div class="char-avatar" style="background:rgba(210,153,34,.2)">🧑</div>
+  <div class="char-info">
+    <div class="char-name">唐僧 → 玄奘法师</div>
+    <div class="char-role">歌姬 · 纯换贴图</div>
+    <div class="char-desc">
+      <strong>保留：</strong>骨架+动画+Avatar+面部系统<br>
+      <strong>换：</strong>贴图(袈裟+僧袍) + 武器(锡杖)<br>
+      <strong>骨骼改动：</strong>不改<br>
+      <strong>面部：</strong>直接复用换脸贴图<br>
+      <strong>工作量：</strong>★☆☆☆☆ 1周
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--accent)">
+  <div class="char-avatar" style="background:rgba(91,44,111,.2)">⚔️</div>
+  <div class="char-info">
+    <div class="char-name">沙僧 → 卷帘大将</div>
+    <div class="char-role">富豪 · 换贴图+面部微调</div>
+    <div class="char-desc">
+      <strong>保留：</strong>骨架+动画+Avatar<br>
+      <strong>换：</strong>贴图(深色铠甲+骷髅项链) + 面部(蓝色纹路贴图) + 武器(降妖宝杖)<br>
+      <strong>骨骼改动：</strong>不改<br>
+      <strong>面部：</strong>人脸+蓝色纹路<br>
+      <strong>工作量：</strong>★★☆☆☆ 1.5周
+    </div>
+  </div>
+</div>
+
+<p style="font-size:14px;font-weight:600;color:var(--green)">封神西游4主角总工期：~7.5周（2个月）</p>
+
+<h3>⚔️ 魔幻三国 — 4主角纯换贴图</h3>
+
+<div class="char-card" style="border-left:4px solid var(--orange)">
+  <div class="char-avatar" style="background:rgba(219,109,40,.2)">🐉</div>
+  <div class="char-info">
+    <div class="char-name">赵云 → 龙胆觉醒者</div>
+    <div class="char-role">侠客 · 纯换贴图</div>
+    <div class="char-desc">
+      <strong>保留：</strong>骨架+动画+Avatar+面部系统+网格<br>
+      <strong>换：</strong>贴图(银甲白袍+龙纹披风) + 武器(龙胆枪)<br>
+      <strong>骨骼改动：</strong>不改<br>
+      <strong>面部：</strong>直接复用换脸贴图<br>
+      <strong>工作量：</strong>★☆☆☆☆ 1周
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--orange)">
+  <div class="char-avatar" style="background:rgba(188,140,255,.2)">💃</div>
+  <div class="char-info">
+    <div class="char-name">貂蝉 → 倾国觉醒者</div>
+    <div class="char-role">歌姬 · 纯换贴图</div>
+    <div class="char-desc">
+      <strong>保留：</strong>骨架+动画+Avatar+面部+网格<br>
+      <strong>换：</strong>贴图(宫装+凤凰发钗) + 武器(绸带/扇)<br>
+      <strong>工作量：</strong>★☆☆☆☆ 1周
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--orange)">
+  <div class="char-avatar" style="background:rgba(248,81,73,.2)">⚔️</div>
+  <div class="char-info">
+    <div class="char-name">典韦 → 恶来觉醒者</div>
+    <div class="char-role">佣兵 · 纯换贴图</div>
+    <div class="char-desc">
+      <strong>保留：</strong>骨架+动画+Avatar+面部+网格<br>
+      <strong>换：</strong>贴图(重甲+裸臂纹身) + 武器(双铁戟)<br>
+      <strong>工作量：</strong>★☆☆☆☆ 1周
+    </div>
+  </div>
+</div>
+
+<div class="char-card" style="border-left:4px solid var(--orange)">
+  <div class="char-avatar" style="background:rgba(63,185,80,.2)">👑</div>
+  <div class="char-info">
+    <div class="char-name">孙策 → 霸王觉醒者</div>
+    <div class="char-role">富豪 · 纯换贴图</div>
+    <div class="char-desc">
+      <strong>保留：</strong>骨架+动画+Avatar+面部+网格<br>
+      <strong>换：</strong>贴图(霸王铠+吴国披风) + 武器(霸王枪)<br>
+      <strong>工作量：</strong>★☆☆☆☆ 1周
+    </div>
+  </div>
+</div>
+
+<p style="font-size:14px;font-weight:600;color:var(--orange)">魔幻三国4主角总工期：~4周（1个月）</p>
+
+<h3>如果不做人类化（做猴脸猪脸）的代价</h3>
+<div class="tech-box" style="border-left-color:var(--red)">
+<h4 style="color:var(--red)">❌ 做猴脸/猪脸会废弃的资产</h4>
+<table class="asset-table">
+<thead><tr><th>受影响系统</th><th class="count">数量</th><th>后果</th></tr></thead>
+<tbody>
+<tr><td class="cat">面部表情系统</td><td class="count">430贴图</td><td>全部废弃</td></tr>
+<tr><td class="cat">口型同步</td><td class="count">全部</td><td>全部重做</td></tr>
+<tr><td class="cat">Spine UI</td><td class="count">47组</td><td>非人骨骼全部重做</td></tr>
+<tr><td class="cat">过场面部演出</td><td class="count">597个</td><td>面部驱动全部重调</td></tr>
+<tr><td class="cat">Q版角色</td><td class="count">27个</td><td>全部重做非人形</td></tr>
+</tbody>
+</table>
+<p style="font-size:13px;color:var(--red);margin-top:8px"><strong>人类化可省掉以上全部重做。这就是换蒙皮+人类化的核心价值：省60-75%工作量。</strong></p>
+</div>
+</div>
+
+<!-- ========== Tab 4: 封神西游详细 ========== -->
+<div id="tab-detail1" class="tab-content">
+<h2>🀄 封神西游 — 美术资源处置明细</h2>
+<table class="asset-table">
+<thead><tr><th>资产分类</th><th class="count">现有</th><th>处置</th><th>具体操作</th></tr></thead>
+<tbody>
+<tr><td class="cat">UI框架/图集</td><td class="count">112</td><td><span class="tag tag-reuse">复用90%</span></td><td>系统图集完全复用。仅替换ImgIcon剧情图标</td></tr>
+<tr><td class="cat">4主角3D模型</td><td class="count">36 FBX</td><td><span class="tag tag-partial">换蒙皮+贴图</span></td><td>骨架全留。悟空/八戒换蒙皮网格，唐僧/沙僧换贴图。面部系统保留</td></tr>
+<tr><td class="cat">Monster 3D</td><td class="count">112 FBX</td><td><span class="tag tag-reuse">复用60%</span></td><td>巨狼→妖狼、巨人→妖将，骨架复用换贴图。机械类→法宝类需改</td></tr>
+<tr><td class="cat">NPC 3D</td><td class="count">74 FBX</td><td><span class="tag tag-partial">改贴图</span></td><td>骨架复用，换中国风贴图</td></tr>
+<tr><td class="cat">Boss 3D</td><td class="count">36 FBX</td><td><span class="tag tag-partial">改贴图+部分模型</span></td><td>骨架复用。牛魔王=牛型Boss换贴图。机械类Boss→法宝阵法类</td></tr>
+<tr><td class="cat">卡牌立绘</td><td class="count">1,052</td><td><span class="tag tag-replace">重画50%</span></td><td>妖将卡牌可改，人物卡需重画。卡框保留</td></tr>
+<tr><td class="cat">场景环境</td><td class="count">2,105</td><td><span class="tag tag-reuse">复用60%</span></td><td>冰原→雪山、海底→龙宫、火山→火焰山。部分建筑换中国风</td></tr>
+<tr><td class="cat">特效</td><td class="count">807+1647</td><td><span class="tag tag-reuse">复用70%</span></td><td>仙术=魔法天然适配。仅删机械感特效</td></tr>
+<tr><td class="cat">Spine</td><td class="count">47组</td><td><span class="tag tag-partial">换贴图</span></td><td>骨架复用，换中国风贴图</td></tr>
+<tr><td class="cat">过场动画</td><td class="count">597</td><td><span class="tag tag-partial">改角色引用</span></td><td>Timeline/镜头全留，换角色模型引用+对话文本</td></tr>
+<tr><td class="cat">音频</td><td class="count">1,342</td><td><span class="tag tag-reuse">复用50%</span></td><td>战斗BGM留，语音重录</td></tr>
+<tr><td class="cat">字体</td><td class="count">56+108</td><td><span class="tag tag-reuse">完全复用</span></td><td>中文通用</td></tr>
+</tbody>
+</table>
+<div class="note"><strong>预估总工期：3-4个月</strong>。美术风格最接近原作，场景和特效复用率最高。</div>
+</div>
+
+<!-- ========== Tab 5: 魔幻三国详细 ========== -->
+<div id="tab-detail2" class="tab-content">
+<h2>⚔️ 魔幻三国 — 美术资源处置明细</h2>
+<table class="asset-table">
+<thead><tr><th>资产分类</th><th class="count">现有</th><th>处置</th><th>具体操作</th></tr></thead>
+<tbody>
+<tr><td class="cat">UI框架/图集</td><td class="count">112</td><td><span class="tag tag-reuse">复用85%</span></td><td>系统UI保留。ImgBack/ImgPlot需换。ImgIcon武将图标需换</td></tr>
+<tr><td class="cat">4主角3D模型</td><td class="count">36 FBX</td><td><span class="tag tag-reuse">复用95%</span></td><td>骨架+网格+面部全留。纯换贴图(银甲/宫装/重甲/霸王铠)+换武器</td></tr>
+<tr><td class="cat">Monster 3D</td><td class="count">112 FBX</td><td><span class="tag tag-partial">改贴图50%</span></td><td>妖怪→黄巾妖兵/妖兽，骨架复用换贴图。机械类→妖化战象</td></tr>
+<tr><td class="cat">NPC 3D</td><td class="count">74 FBX</td><td><span class="tag tag-partial">改贴图</span></td><td>换三国人物服饰贴图</td></tr>
+<tr><td class="cat">Boss 3D</td><td class="count">36 FBX</td><td><span class="tag tag-partial">改贴图+部分模型</span></td><td>骨架复用。非人类Boss→妖兽化武将。机械类→妖化战象</td></tr>
+<tr><td class="cat">卡牌立绘</td><td class="count">1,052</td><td><span class="tag tag-replace">重画85%</span></td><td>全部重画为三国武将。卡框保留</td></tr>
+<tr><td class="cat">场景环境</td><td class="count">2,105</td><td><span class="tag tag-partial">复用30%+改25%</span></td><td>冰雪/海底→中原战场。森林可改。城池换三国风格</td></tr>
+<tr><td class="cat">特效</td><td class="count">807+1647</td><td><span class="tag tag-reuse">复用80%</span></td><td>觉醒系统让魔法特效=武将觉醒技。仅删过于科幻的特效</td></tr>
+<tr><td class="cat">Spine</td><td class="count">47组</td><td><span class="tag tag-reuse">复用85%</span></td><td>骨架+网格全留，换三国风贴图</td></tr>
+<tr><td class="cat">过场动画</td><td class="count">597</td><td><span class="tag tag-partial">复用55%+改25%</span></td><td>Timeline结构留，角色引用换，场景道具部分换</td></tr>
+<tr><td class="cat">音频</td><td class="count">1,342</td><td><span class="tag tag-partial">复用45%</span></td><td>战斗BGM部分留，剧情BGM换古风，语音重录</td></tr>
+<tr><td class="cat">字体</td><td class="count">56+108</td><td><span class="tag tag-reuse">完全复用</span></td><td>中文通用</td></tr>
+</tbody>
+</table>
+<div class="note"><strong>预估总工期：3-5个月</strong>。4主角工期最短(4周)，但卡牌立绘和场景改动量大。觉醒系统是关键——让特效复用从40%提升到80%。</div>
+</div>
+
+<!-- ========== Tab 6: 逐类对比 ========== -->
+<div id="tab-comparison" class="tab-content">
+<h2>逐类对比</h2>
+<table class="asset-table">
+<thead><tr><th>资产分类</th><th class="count">现有</th><th>🀄 封神西游</th><th>⚔️ 魔幻三国</th></tr></thead>
+<tbody>
+<tr><td class="cat">UI系统图集</td><td class="count">112</td><td><span class="tag tag-reuse">复用90%</span></td><td><span class="tag tag-reuse">复用85%</span></td></tr>
+<tr><td class="cat">4主角3D</td><td class="count">36 FBX</td><td><span class="tag tag-partial">换蒙皮+贴图<br>7.5周</span></td><td><span class="tag tag-reuse">纯换贴图<br>4周</span></td></tr>
+<tr><td class="cat">Monster 3D</td><td class="count">112 FBX</td><td><span class="tag tag-reuse">复用60%</span></td><td><span class="tag tag-partial">复用50%</span></td></tr>
+<tr><td class="cat">NPC 3D</td><td class="count">74 FBX</td><td><span class="tag tag-partial">改贴图</span></td><td><span class="tag tag-partial">改贴图</span></td></tr>
+<tr><td class="cat">Boss 3D</td><td class="count">36 FBX</td><td><span class="tag tag-partial">改贴图+部分模型</span></td><td><span class="tag tag-partial">改贴图+部分模型</span></td></tr>
+<tr><td class="cat">卡牌立绘</td><td class="count">1,052</td><td><span class="tag tag-replace">重画50%</span></td><td><span class="tag tag-replace">重画85%</span></td></tr>
+<tr><td class="cat">场景环境</td><td class="count">2,105</td><td><span class="tag tag-reuse">复用60%</span></td><td><span class="tag tag-partial">复用30%+改25%</span></td></tr>
+<tr><td class="cat">特效</td><td class="count">807+1647</td><td><span class="tag tag-reuse">复用70%</span></td><td><span class="tag tag-reuse">复用80%</span></td></tr>
+<tr><td class="cat">Spine</td><td class="count">47组</td><td><span class="tag tag-partial">换贴图,骨架留</span></td><td><span class="tag tag-reuse">换贴图,骨架+网格留</span></td></tr>
+<tr><td class="cat">过场动画</td><td class="count">597</td><td><span class="tag tag-partial">复用70%</span></td><td><span class="tag tag-partial">复用55%+改25%</span></td></tr>
+<tr><td class="cat">音频</td><td class="count">1,342</td><td><span class="tag tag-reuse">复用50%</span></td><td><span class="tag tag-partial">复用45%</span></td></tr>
+<tr><td class="cat">字体</td><td class="count">56+108</td><td><span class="tag tag-reuse">完全复用</span></td><td><span class="tag tag-reuse">完全复用</span></td></tr>
+</tbody>
+</table>
+
+<h3>综合评估</h3>
+<div class="summary-grid">
+  <div class="summary-card" style="border-left:4px solid var(--green)">
+    <h4>🀄 封神西游</h4>
+    <div style="text-align:center;font-size:48px;font-weight:800;color:var(--green)">A</div>
+    <ul class="detail-list" style="margin-top:8px">
+      <li class="check">✅ 场景复用60%（最高）</li>
+      <li class="check">✅ 特效复用70%</li>
+      <li class="check">✅ 卡牌只需重画50%</li>
+      <li class="warn">⚠️ 4主角需换蒙皮：7.5周</li>
+      <li class="check">✅ 预估总工期：3-4个月</li>
+    </ul>
+  </div>
+  <div class="summary-card" style="border-left:4px solid var(--orange)">
+    <h4>⚔️ 魔幻三国</h4>
+    <div style="text-align:center;font-size:48px;font-weight:800;color:var(--orange)">A-</div>
+    <ul class="detail-list" style="margin-top:8px">
+      <li class="check">✅ 4主角只换贴图：4周（最短）</li>
+      <li class="check">✅ 特效复用80%（觉醒系统）</li>
+      <li class="check">✅ Spine复用85%</li>
+      <li class="cross">❌ 卡牌需重画85%</li>
+      <li class="cross">❌ 场景复用仅30%+25%改</li>
+      <li class="warn">⚠️ 预估总工期：3-5个月</li>
+    </ul>
+  </div>
+</div>
+
+<div class="note">
+  <strong>结论：</strong>封神西游赢在场景+卡牌复用率，魔幻三国赢在4主角工期+特效+Spine复用。两者总工期接近(3-4月vs3-5月)。核心差异：西游的省在"风格契合"，三国的省在"人形纯换贴图"。
+</div>
+</div>
+
+<script>
+function switchTab(t){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));event.target.classList.add('active');document.getElementById('tab-'+t).classList.add('active')}
+</script>
+</body>
+</html>
